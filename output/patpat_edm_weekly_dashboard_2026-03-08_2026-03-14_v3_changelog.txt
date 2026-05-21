@@ -1,0 +1,9 @@
+Changelog
+- 主题汇总归属规则：改为只纳入 attribuly 日期属于所选周期的 campaign。
+- 历史归因归属规则：改为纳入非所选周期发送归属、但在所选周期有归因贡献的 campaign。
+- 0 revenue campaign 已纳入主题汇总：current=2, previous=1。
+- 主题汇总与 historical carryover 均已增加日期列。
+- 页面已改为 manual / automation 顶层 tab 切换。
+- Email分析首页已去掉 SMS 核心卡片，改为 Email 导向。
+- mapping/unmatched：current=2, previous=36。
+- theme vs carryover split overlap：current=0, previous=0。

@@ -1,0 +1,23 @@
+{
+  "baseline": "/Users/chengxinyuan/Documents/Playground/output/patpat_edm_weekly_dashboard_2026-04-19_2026-04-25_v45_prevweek_0412_0418_fixed.html",
+  "new_week_key": "w9",
+  "new_range": "2026-04-26 ~ 2026-05-02",
+  "manual_file": "/Users/chengxinyuan/Downloads/patpat邮件/干点看板搭建的大事/emarsys手动邮件-TrendReporting4.26-5.2.csv",
+  "auto_file": "/Users/chengxinyuan/Downloads/patpat邮件/干点看板搭建的大事/emarsys自动邮件-TrendReporting4.26-5.2.csv",
+  "attr_file": "/Users/chengxinyuan/Downloads/patpat邮件/干点看板搭建的大事/attribuly归因数据表4.26-5.2.xlsx",
+  "checks": {
+    "w9_manual_send": 7662148.0,
+    "w9_manual_revenue": 2905.5899999999997,
+    "w9_auto_send": 19591.0,
+    "w9_auto_revenue": 1380.94,
+    "w9_auto_rpr": 0.07112747875354108,
+    "w9_private_revenue": 6925.0,
+    "w9_market_revenue": 119623.77000000002,
+    "w9_unresolved_count": 9
+  },
+  "global_ranges": {
+    "current_range": "2026-04-26 ~ 2026-05-02",
+    "previous_range": "2026-04-19 ~ 2026-04-25",
+    "older_range": "2026-04-12 ~ 2026-04-18"
+  }
+}

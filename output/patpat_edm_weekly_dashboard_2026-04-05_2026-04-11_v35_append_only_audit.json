@@ -1,0 +1,45 @@
+{
+  "baseline_html": "/Users/chengxinyuan/Documents/Playground/0408-更新patpat_edm_handoff_2026-04-08/dashboards/patpat_edm_weekly_dashboard_2026-03-29_2026-04-04_v34_ai_insights_injected.html",
+  "new_week_key": "w6",
+  "new_range": "2026-04-05 ~ 2026-04-11",
+  "checks": [
+    {
+      "name": "new week manual send",
+      "value": 14656298.0
+    },
+    {
+      "name": "new week manual revenue",
+      "value": 2238.18
+    },
+    {
+      "name": "new week auto send",
+      "value": 46922.0
+    },
+    {
+      "name": "new week auto revenue",
+      "value": 2015.38
+    },
+    {
+      "name": "new week auto RPR",
+      "value": 0.04335828923023966
+    },
+    {
+      "name": "private total revenue equals email+sms",
+      "value": 4634.24,
+      "email_sms_sum": 4634.24
+    },
+    {
+      "name": "market revenue equals attribuly total",
+      "value": 99758.02999999998,
+      "attribuly_total": 99758.02999999998
+    }
+  ],
+  "week_keys_after_append": [
+    "w1",
+    "w2",
+    "w3",
+    "w4",
+    "w5",
+    "w6"
+  ]
+}

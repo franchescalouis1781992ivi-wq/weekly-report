@@ -1,0 +1,6 @@
+v49 自动口径修正
+- Auto Revenue 改为 Channel=email 且排除 emanual/manual
+- Flow 发送指标改为仅使用 Emarsys 自动邮件周表
+- auto revenue: 2073.4
+- auto send: 19591
+- unresolved: 9

@@ -1,0 +1,13 @@
+Changelog
+- Baseline: v42 (frozen history unchanged)
+- Appended new week w8: 2026-04-19 ~ 2026-04-25
+- Updated period selector + default_week=w8
+- Updated weekly_trend_rows with new week summary
+- Updated AUTO_FAMILY_ATTR_BY_RANGE with 2026-04-19 ~ 2026-04-25
+- Added new week manual/auto/private data blocks from source files
+- Manual total send: 9,758,895
+- Manual revenue: 2960.60
+- Auto total send: 24,660
+- Auto revenue(email whitelist): 2780.88
+- Auto RPR: 0.1136
+- Unresolved auto rows: 0

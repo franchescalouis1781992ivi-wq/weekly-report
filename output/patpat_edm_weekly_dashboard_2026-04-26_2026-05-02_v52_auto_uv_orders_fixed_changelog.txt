@@ -1,0 +1,5 @@
+Changelog (v51_auto_uv_orders_fixed)
+- 修正自动化整体归因口径：UV=231，Order UV=28，Revenue=2073.40。
+- 修正自动Flow发送汇总：使用该周自动邮件源全量family聚合。
+- 修复By Flow中reactivation与首购后入会为0的问题。
+- 输出命名统一：html + audit + changelog。

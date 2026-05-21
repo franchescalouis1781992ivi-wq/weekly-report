@@ -1,0 +1,28 @@
+{
+  "week": "2026-05-10 ~ 2026-05-16",
+  "manual": {
+    "send": 11083880.0,
+    "delivered": 11057945.0,
+    "opened": 5456472.0,
+    "clicked": 4815.0,
+    "unsub": 3884.0,
+    "revenue": 1992.8600000000001
+  },
+  "auto": {
+    "send": 25418.0,
+    "delivered": 25143.0,
+    "opened": 7880.0,
+    "clicked": 193.0,
+    "unsub": 73.0,
+    "uv": 110.0,
+    "order_uv": 16.0,
+    "revenue": 1365.46
+  },
+  "private": {
+    "all_revenue": 93272.40000000001,
+    "email_revenue": 3677.13,
+    "sms_revenue": 753.19,
+    "private_revenue": 4430.32
+  },
+  "new_week_key": "w11"
+}

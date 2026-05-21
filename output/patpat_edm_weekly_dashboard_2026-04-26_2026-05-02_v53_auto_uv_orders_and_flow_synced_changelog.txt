@@ -1,0 +1,4 @@
+Changelog (v53)
+- 新版本号输出，避免浏览器缓存。
+- 自动模块已同步：Revenue=2073.40, UV=231, Order UV=28。
+- 自动Flow面板与auto_rows口径对齐。

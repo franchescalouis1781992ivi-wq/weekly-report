@@ -1,0 +1,21 @@
+{
+  "week": "2026-04-19 ~ 2026-04-25",
+  "manual_send": 9758895.0,
+  "manual_revenue": 2960.6,
+  "auto_send": 24660.0,
+  "auto_revenue": 2780.88,
+  "auto_rpr": 0.11364446260727422,
+  "auto_compare_prev_present": true,
+  "theme_key_intersection_coverage": 1.0,
+  "private_market_revenue": 111093.14,
+  "private_email_revenue": 6577.81,
+  "private_sms_revenue": 1810.5,
+  "private_sum_revenue": 8388.310000000001,
+  "private_sum_equals_email_plus_sms": true,
+  "share_cards_prev_present": {
+    "email": true,
+    "sms": true,
+    "private": true
+  },
+  "unresolved_count": 0
+}

@@ -1,0 +1,9 @@
+v47 自动归因修正
+- base: patpat_edm_weekly_dashboard_2026-04-26_2026-05-02_v46_append_only.html
+- 追加纳入: eautomation_Sale_welcome_us-1_Miki_2026_2509 -> 订阅欢迎
+- 追加纳入: sale_2025_12 -> 订阅欢迎
+- auto send: 19591.0
+- auto revenue: 1760.52
+- auto order uv: 22.0
+- auto uv: 146.0
+- out: patpat_edm_weekly_dashboard_2026-04-26_2026-05-02_v47_auto_include_welcome_fix.html

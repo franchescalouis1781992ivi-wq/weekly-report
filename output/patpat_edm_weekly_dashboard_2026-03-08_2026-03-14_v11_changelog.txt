@@ -1,0 +1,17 @@
+Changelog
+- 已停止使用“第二个 token 通用规则”作为 Theme 主规则，改为 business theme alias 映射优先。
+- 已新增 business theme mapping / alias 规则，并用于 Emarsys 发送匹配。
+- 主题汇总 Emarsys 匹配已改为“日期 + 业务主题”近似匹配，不再依赖 campaign 同名精确匹配。
+- emanual_ip_sq_2026_308 映射状态：matched（目标 theme=ip）。
+- emanual_new_all_sq_2026_312 映射状态：matched（目标 theme=new）。
+- emanual_plus_size_sq_2026_314 映射状态：matched（目标 theme=plus）。
+- member1/member2/member3 归并到 member 状态：matched。
+- happy1/happy2 归并到 happyhour 状态：matched。
+- Historical Carryover 已按“周期内有归因 + 手动邮件 + 发送期早于当前周期”重算，并兼容旧命名规则（*_2026_02 / *_2026_2）。
+- 旧命名规则纳入数量：carryover_old_naming_rule_included_count current=1, previous=6。
+- 日期缺失/旧规则推断数量：carryover_missing_date_inferred_count current=1, previous=6。
+- carryover_missing_examples(current)：gift-card_2025_10, emanual_disney_sq_2026_02。
+- emanual_family_cxy_2026_02 这类 campaign 已纳入 carryover 判断逻辑（命中旧命名规则时）。
+- 站点=ALL 时，发送指标已聚合所有站点发送数据；站点/人群筛选继续联动发送指标。
+- Delivered=0 假缺失修复条数：current=0, previous=0（before/after: current 0->0, previous 4->4）。
+- manual revenue 对账差异：current=146.21, previous=0.0。

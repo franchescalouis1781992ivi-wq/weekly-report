@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PatPat EDM Weekly Dashboard</title>
+  <style>
+    :root {
+      --bg:#f6f2ea; --card:#fffdf9; --line:#e9dfd1; --ink:#241d17; --sub:#7b6d5f;
+      --brand:#be632a; --good:#1f7a4c; --bad:#b84535; --muted:#a49a8f; --warn:#b77a18;
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0; color:var(--ink);
+      font-family:"Avenir Next","PingFang SC","Microsoft YaHei",sans-serif;
+      font-variant-numeric: tabular-nums lining-nums;
+      background:
+        radial-gradient(circle at 0% 0%, #fdeedb 0, transparent 30%),
+        radial-gradient(circle at 100% 100%, #e9f4f1 0, transparent 28%),
+        var(--bg);
+    }
+    .wrap { max-width:1420px; margin:0 auto; padding:26px 18px 44px; }
+    .hero-title { font-size:42px; font-weight:900; letter-spacing:-0.03em; line-height:1.1; }
+    .hero-sub { margin-top:8px; color:var(--sub); font-size:14px; line-height:1.6; }
+    .section { margin-top:16px; background:var(--card); border:1px solid var(--line); border-radius:20px; padding:18px 20px; }
+    .section-head { display:grid; grid-template-columns:1fr auto; align-items:center; gap:10px; margin-bottom:12px; }
+    .section-title { margin:0; font-size:24px; }
+    .section-sub { margin:6px 0 0; color:var(--sub); font-size:13px; }
+    .badge { display:inline-block; border:1px solid var(--line); background:#fff; border-radius:999px; padding:5px 10px; font-size:12px; color:var(--sub); white-space:nowrap; }
+    .strip { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; }
+    .chip { border:1px solid var(--line); background:#fff; border-radius:12px; padding:10px; font-size:12px; }
+    .chip .k { color:var(--sub); margin-bottom:4px; }
+    .chip .v { font-weight:800; }
+    .status-pass { color:var(--good); }
+    .status-warning { color:var(--warn); }
+    .cards { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; }
+    .card { border:1px solid var(--line); background:#fff; border-radius:14px; padding:12px; min-height:110px; }
+    .card .k { font-size:12px; color:var(--sub); }
+    .card .v { font-size:28px; font-weight:900; margin-top:8px; }
+    .card .w { margin-top:8px; font-size:12px; font-weight:700; }
+    .up { color:var(--good); } .down { color:var(--bad); } .na { color:var(--muted); }
+    .note { margin-top:12px; border:1px solid var(--line); border-radius:14px; padding:12px 14px; background:#fff; }
+    .note ul { margin:0; padding-left:18px; }
+    .note li { margin:6px 0; font-size:13px; line-height:1.55; }
+    .tbl-wrap { overflow:auto; border:1px solid var(--line); border-radius:14px; background:#fff; }
+    table { width:100%; border-collapse:collapse; table-layout:fixed; font-size:12px; }
+    th, td { border-bottom:1px solid #efe5d8; padding:9px 10px; vertical-align:middle; }
+    th { background:#fbf6ed; text-align:left; font-weight:700; }
+    td.text, th.text { text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    td.num, th.num { text-align:right; white-space:nowrap; }
+    td.delta { text-align:right; font-weight:700; white-space:nowrap; }
+    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .small { font-size:12px; color:var(--sub); }
+    .footer { margin-top:10px; font-size:12px; color:var(--sub); white-space:pre-line; }
+    @media (max-width:1200px) {
+      .cards, .strip { grid-template-columns:1fr; }
+      .grid-2 { grid-template-columns:1fr; }
+      .hero-title { font-size:34px; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero-title">PatPat EDM 周报看板</div>
+  <div class="hero-sub">本周：2026-03-08 ~ 2026-03-14 ｜ 上周：2026-03-01 ~ 2026-03-07 ｜ 生成时间：2026-03-20 10:08:24</div>
+
+  <!-- 1. Executive Summary -->
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <h2 class="section-title">Executive Summary</h2>
+        <p class="section-sub">本周核心结论：收入变化来自量还是效率，以及手动/自动化哪一侧在拉动或拖累。</p>
+      </div>
+      <span class="badge" id="qaBadge"></span>
+    </div>
+    <div class="cards" id="summaryCards"></div>
+    <div class="note"><ul id="takeaways"></ul></div>
+  </section>
+
+  <!-- 2. Data QA Strip -->
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <h2 class="section-title">Data QA</h2>
+        <p class="section-sub">展示数据源、过滤口径与匹配完整度，避免环比口径失真。</p>
+      </div>
+      <span class="badge">校验条</span>
+    </div>
+    <div class="strip" id="qaStrip"></div>
+  </section>
+
+  <!-- 3. Overall Snapshot -->
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <h2 class="section-title">Overall Private Channel Snapshot</h2>
+        <p class="section-sub">统一口径：Sessions = Clicks(UV), Revenue = Attribuly tracked conversion value。</p>
+      </div>
+      <span class="badge">统一口径</span>
+    </div>
+    <div class="tbl-wrap"><table id="overallTbl"></table></div>
+  </section>
+
+  <!-- 4. Manual Theme Table -->
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <h2 class="section-title">Manual Email Performance · 主题汇总</h2>
+        <p class="section-sub">销售分析只在主题层完成；A/B 变体行不拆分销售归因。</p>
+      </div>
+      <span class="badge">Theme 汇总</span>
+    </div>
+    <div class="tbl-wrap"><table id="manualThemeTbl"></table></div>
+  </section>
+
+  <!-- 5. Manual Total -->
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <h2 class="section-title">Manual Email Total Summary</h2>
+        <p class="section-sub">本周/上周/环比均按同一口径重算，新增纳入/排除 campaign 计数。</p>
+      </div>
+      <span class="badge">总览</span>
+    </div>
+    <div class="grid-2">
+      <div class="tbl-wrap"><table id="manualTotalTbl"></table></div>
+      <div class="note"><ul id="manualBullets"></ul></div>
+    </div>
+  </section>
+
+  <!-- 6. Historical Carryover -->
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <h2 class="section-title">Historical Carryover Attribution</h2>
+        <p class="section-sub">这部分不是本周新发邮件，作用是解释结构性补量。</p>
+      </div>
+      <span class="badge">历史邮件持续贡献</span>
+    </div>
+    <div class="cards" style="grid-template-columns:repeat(3,minmax(0,1fr));" id="carryCards"></div>
+    <div class="tbl-wrap" style="margin-top:10px;"><table id="carryTbl"></table></div>
+  </section>
+
+  <!-- 7. Automation -->
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <h2 class="section-title">Automation Email Summary</h2>
+        <p class="section-sub">当前仅纳入 subscribe-welcome / abandoned-browse / abandoned-cart，当前周与上周规则一致。</p>
+      </div>
+      <span class="badge">Automation</span>
+    </div>
+    <div class="grid-2">
+      <div class="tbl-wrap"><table id="autoTbl"></table></div>
+      <div class="note"><ul id="autoBullets"></ul></div>
+    </div>
+  </section>
+
+  <!-- 8. Raw Evidence -->
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <h2 class="section-title">Raw Evidence · 发送记录追踪</h2>
+        <p class="section-sub">证据层仅用于互动指标比较。支持站点筛选，默认 NAME。</p>
+      </div>
+      <span class="badge">证据表</span>
+    </div>
+    <div class="small" style="margin-bottom:8px;">站点筛选：
+      <select id="siteFilter" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:#fff;"></select>
+    </div>
+    <div class="tbl-wrap"><table id="rawTbl"></table></div>
+  </section>
+
+  <!-- 9. Appendix / Validation -->
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <h2 class="section-title">Appendix / Validation</h2>
+        <p class="section-sub">映射逻辑、过滤口径和校验摘要。</p>
+      </div>
+      <span class="badge">数据说明</span>
+    </div>
+    <div class="tbl-wrap"><table id="mapTbl"></table></div>
+    <div class="tbl-wrap" style="margin-top:10px;"><table id="valTbl"></table></div>
+    <div class="footer" id="changelog"></div>
+  </section>
+</div>
+<script>
+const DATA = {"generated_at": "2026-03-20 10:08:24", "current_range": "2026-03-08 ~ 2026-03-14", "prev_range": "2026-03-01 ~ 2026-03-07", "summary_cards": [{"label": "私域Revenue", "type": "money", "value": {"cur": 7312.08, "prev": 5187.6900000000005, "wow": 0.4095059650827245}}, {"label": "手动Revenue", "type": "money", "value": {"cur": 2454.93, "prev": 2479.42, "wow": -0.009877310016052236}}, {"label": "手动CTR", "type": "rate", "value": {"cur": 0.0004982779072703875, "prev": 0.00044266579061785695, "wow": 0.12563003021965882}}, {"label": "历史Carryover Revenue", "type": "money", "value": {"cur": 683.91, "prev": 2359.57, "wow": -0.710154816343656}}, {"label": "自动化Revenue", "type": "money", "value": {"cur": 2280.83, "prev": 1111.04, "wow": 1.0528783842165899}}], "takeaways": ["私域合计 Revenue 本周 7312.08，环比 +40.95%。", "手动邮件 Revenue 2454.93，CTR 0.05%；若上周可比，优先看量变还是效率变。", "自动化当前仅纳入 welcome/browse/cart 三类；Revenue 2280.83。", "历史 carryover 本周贡献 Revenue 683.91，需与本周新发主题表现分开解读。"], "data_qa_strip": [{"name": "manual source check", "state": "pass"}, {"name": "automation source check", "state": "pass"}, {"name": "attribuly source check", "state": "pass"}, {"name": "mapping completeness", "state": "warning"}, {"name": "unmatched campaigns", "state": "warning"}], "overall_rows": [{"指标": "大盘", "Sessions": {"cur": 237161.0, "prev": 166658.0, "wow": 0.42303999807990017}, "Revenue": {"cur": 144401.03, "prev": 95289.46, "wow": 0.5153935178140372}, "RevenueShare": null}, {"指标": "Email", "Sessions": {"cur": 5191.0, "prev": 3819.0, "wow": 0.35925634982979837}, "Revenue": {"cur": 5173.44, "prev": 4157.6, "wow": 0.24433326919376544}, "RevenueShare": 0.03582689126247922}, {"指标": "SMS", "Sessions": {"cur": 83.0, "prev": 77.0, "wow": 0.07792207792207792}, "Revenue": {"cur": 2138.64, "prev": 1030.09, "wow": 1.0761681018163463}, "RevenueShare": 0.014810420673592147}, {"指标": "私域合计", "Sessions": {"cur": 5274.0, "prev": 3896.0, "wow": 0.35369609856262835}, "Revenue": {"cur": 7312.08, "prev": 5187.6900000000005, "wow": 0.4095059650827245}, "RevenueShare": 0.05063731193607137}], "manual_theme_rows": [{"Theme": "Member Day", "Send": {"cur": 800743.0, "prev": 1708706.0, "wow": -0.5313746191562504}, "Delivered": {"cur": 799306.0, "prev": 1705632.0, "wow": -0.5313725352244798}, "Open rate": {"cur": 0.2458632864009528, "prev": 0.5719938415789573, "wow": -0.5701644519069282}, "CTR": {"cur": 0.0007293827395265393, "prev": 0.0005341128684264836, "wow": 0.3655966419145226}, "CTO": {"cur": 0.0029666191736210054, "prev": 0.000933773809438393, "wow": 2.177021183968784}, "UV": {"cur": 652.0, "prev": 0.0, "wow": null}, "Order UV": {"cur": 9.0, "prev": 0.0, "wow": null}, "Revenue": {"cur": 664.23, "prev": 0.0, "wow": null}, "CVR": {"cur": 0.013803680981595092, "prev": 0.0, "wow": null}, "ARPU": {"cur": 0.000831008399786815, "prev": 0.0, "wow": null}}, {"Theme": "复活节", "Send": {"cur": 1456727.0, "prev": 1133018.0, "wow": 0.2857050814726686}, "Delivered": {"cur": 1454602.0, "prev": 1130417.0, "wow": 0.28678354978737935}, "Open rate": {"cur": 0.5066334296254233, "prev": 0.540090957584679, "wow": -0.06194795059869137}, "CTR": {"cur": 0.00045785720080131887, "prev": 0.0005723551574330534, "wow": -0.2000470427229915}, "CTO": {"cur": 0.0009037248117239975, "prev": 0.0010597384558939148, "wow": -0.14721900795636977}, "UV": {"cur": 840.0, "prev": 0.0, "wow": null}, "Order UV": {"cur": 4.0, "prev": 0.0, "wow": null}, "Revenue": {"cur": 283.86, "prev": 0.0, "wow": null}, "CVR": {"cur": 0.004761904761904762, "prev": 0.0, "wow": null}, "ARPU": {"cur": 0.00019514616369288644, "prev": 0.0, "wow": null}}, {"Theme": "happy hour", "Send": {"cur": 1687771.0, "prev": 1557091.0, "wow": 0.08392573073763833}, "Delivered": {"cur": 1684685.0, "prev": 1553888.0, "wow": 0.08417402026400873}, "Open rate": {"cur": 0.5739802989876446, "prev": 0.5470542278465372, "wow": 0.049220113419287566}, "CTR": {"cur": 0.0004707111418455082, "prev": 0.0004981053975576103, "wow": -0.05499690596894945}, "CTO": {"cur": 0.0008200824012178172, "prev": 0.0009105228918865823, "wow": -0.0993280800237482}, "UV": {"cur": 686.0, "prev": 0.0, "wow": null}, "Order UV": {"cur": 4.0, "prev": 0.0, "wow": null}, "Revenue": {"cur": 277.8, "prev": 0.0, "wow": null}, "CVR": {"cur": 0.0058309037900874635, "prev": 0.0, "wow": null}, "ARPU": {"cur": 0.0001648972953400784, "prev": 0.0, "wow": null}}, {"Theme": "亲子-大码主题", "Send": {"cur": 835511.0, "prev": null, "wow": null}, "Delivered": {"cur": 833654.0, "prev": null, "wow": null}, "Open rate": {"cur": 0.24128115501155156, "prev": null, "wow": null}, "CTR": {"cur": 0.0004738176749586759, "prev": null, "wow": null}, "CTO": {"cur": 0.00196375748837903, "prev": null, "wow": null}, "UV": {"cur": 403.0, "prev": null, "wow": null}, "Order UV": {"cur": 3.0, "prev": null, "wow": null}, "Revenue": {"cur": 180.1, "prev": null, "wow": null}, "CVR": {"cur": 0.007444168734491315, "prev": null, "wow": null}, "ARPU": {"cur": 0.00021603686901280387, "prev": null, "wow": null}}, {"Theme": "bamboo-睡眠日", "Send": {"cur": 733539.0, "prev": null, "wow": null}, "Delivered": {"cur": 732183.0, "prev": null, "wow": null}, "Open rate": {"cur": 0.47588102974256435, "prev": null, "wow": null}, "CTR": {"cur": 0.0002868135425160103, "prev": null, "wow": null}, "CTO": {"cur": 0.0006027000964320154, "prev": null, "wow": null}, "UV": {"cur": 217.0, "prev": null, "wow": null}, "Order UV": {"cur": 3.0, "prev": null, "wow": null}, "Revenue": {"cur": 167.8, "prev": null, "wow": null}, "CVR": {"cur": 0.013824884792626729, "prev": null, "wow": null}, "ARPU": {"cur": 0.00022917767825803112, "prev": null, "wow": null}}, {"Theme": "Flash sale", "Send": {"cur": 894783.0, "prev": 1492680.0, "wow": -0.4005526971621513}, "Delivered": {"cur": 892700.0, "prev": 1490138.0, "wow": -0.40092796774526923}, "Open rate": {"cur": 0.25994062955080094, "prev": 0.5228220473540035, "wow": -0.5028124179797743}, "CTR": {"cur": 0.0009409656099473508, "prev": 0.0004757948592680678, "wow": 0.9776708209812769}, "CTO": {"cur": 0.003619925102025865, "prev": 0.0009100512529570248, "wow": 2.9777156399308953}, "UV": {"cur": 61.0, "prev": 4.0, "wow": 14.25}, "Order UV": {"cur": 2.0, "prev": 1.0, "wow": 1.0}, "Revenue": {"cur": 110.39, "prev": 65.84, "wow": 0.676640340218712}, "CVR": {"cur": 0.03278688524590164, "prev": 0.25, "wow": -0.8688524590163934}, "ARPU": {"cur": 0.00012365856390724768, "prev": 4.418382726968912e-05, "wow": 1.7987291176126705}}, {"Theme": "新品主题", "Send": {"cur": 1442409.0, "prev": 1515343.0, "wow": -0.04813035728544626}, "Delivered": {"cur": 1440084.0, "prev": 1512650.0, "wow": -0.047972763031765446}, "Open rate": {"cur": 0.49582316031564827, "prev": 0.5291680163950683, "wow": -0.06301374052532546}, "CTR": {"cur": 0.00036733968296293827, "prev": 0.00028823587743364296, "wow": 0.27444121888506545}, "CTO": {"cur": 0.0007408683425136585, "prev": 0.0005446963317950243, "wow": 0.36014931488919233}, "UV": {"cur": 551.0, "prev": 0.0, "wow": null}, "Order UV": {"cur": 2.0, "prev": 0.0, "wow": null}, "Revenue": {"cur": 86.84, "prev": 0.0, "wow": null}, "CVR": {"cur": 0.003629764065335753, "prev": 0.0, "wow": null}, "ARPU": {"cur": 6.0302037936675915e-05, "prev": 0.0, "wow": null}}, {"Theme": "IP主题", "Send": {"cur": 1282275.0, "prev": null, "wow": null}, "Delivered": {"cur": 1280067.0, "prev": null, "wow": null}, "Open rate": {"cur": 0.5799329253859369, "prev": null, "wow": null}, "CTR": {"cur": 0.0003577937717322609, "prev": null, "wow": null}, "CTO": {"cur": 0.0006169571618892899, "prev": null, "wow": null}, "UV": {"cur": 499.0, "prev": null, "wow": null}, "Order UV": {"cur": 0.0, "prev": null, "wow": null}, "Revenue": {"cur": 0.0, "prev": null, "wow": null}, "CVR": {"cur": 0.0, "prev": null, "wow": null}, "ARPU": {"cur": 0.0, "prev": null, "wow": null}}, {"Theme": "迪士尼-竹纤维", "Send": {"cur": 458452.0, "prev": 1046329.0, "wow": -0.5618471819093229}, "Delivered": {"cur": 457697.0, "prev": 1043367.0, "wow": -0.5613269348177583}, "Open rate": {"cur": 0.24552924751527758, "prev": 0.6005940383393379, "wow": -0.5911893361542948}, "CTR": {"cur": 0.000648900910427641, "prev": 0.0003785820329759327, "wow": 0.7140298638231811}, "CTO": {"cur": 0.0026428660413960027, "prev": 0.0006303459721690285, "wow": 3.192722977671876}, "UV": {"cur": 637.0, "prev": 0.0, "wow": null}, "Order UV": {"cur": 0.0, "prev": 0.0, "wow": null}, "Revenue": {"cur": 0.0, "prev": 0.0, "wow": null}, "CVR": {"cur": 0.0, "prev": 0.0, "wow": null}, "ARPU": {"cur": 0.0, "prev": 0.0, "wow": null}}], "manual_total_rows": [{"指标": "Send", "type": "count", "value": {"cur": 9592210.0, "prev": 13096090.0, "wow": -0.26755161273326616}}, {"指标": "Delivered", "type": "count", "value": {"cur": 9574978.0, "prev": 13070809.0, "wow": -0.2674532999449384}}, {"指标": "Open rate", "type": "rate", "value": {"cur": 0.44395193388433896, "prev": 0.5463956362609231, "wow": -0.18748997169454645}}, {"指标": "CTR", "type": "rate", "value": {"cur": 0.0004982779072703875, "prev": 0.00044266579061785695, "wow": 0.12563003021965882}}, {"指标": "CTO", "type": "rate", "value": {"cur": 0.0011223690432221472, "prev": 0.000810156160190248, "wow": 0.38537370740794297}}, {"指标": "UV", "type": "count", "value": {"cur": 4981.0, "prev": 3602.0, "wow": 0.38284286507495835}}, {"指标": "Order UV", "type": "count", "value": {"cur": 39.0, "prev": 36.0, "wow": 0.08333333333333333}}, {"指标": "Revenue", "type": "money", "value": {"cur": 2454.93, "prev": 2479.42, "wow": -0.009877310016052236}}, {"指标": "CVR", "type": "rate", "value": {"cur": 0.00782975306163421, "prev": 0.009994447529150472, "wow": -0.2165897075553771}}, {"指标": "ARPU", "type": "money", "value": {"cur": 0.0002563901452306209, "prev": 0.00018969139553642013, "wow": 0.3516171595742982}}, {"指标": "Included campaign count", "type": "count", "value": {"cur": 21.0, "prev": 17.0, "wow": 0.23529411764705882}}, {"指标": "Excluded campaign count", "type": "count", "value": {"cur": 9.0, "prev": 9.0, "wow": 0.0}}], "manual_bullets": ["主题汇总中的 Revenue/Order 统一来自主题级归因，不在 A/B 变体行中拆分。", "若某主题上周不存在，对应上周与WoW显示为 —，避免错误比较。", "Included/Excluded campaign count 用于解释总量变化是否来自纳入口径变化。"], "carryover_rows": [{"Campaign": "emanual_matching_vacation_cxy_2026_307", "UV": {"cur": 220.0, "prev": null, "wow": null}, "Order UV": {"cur": 4.0, "prev": null, "wow": null}, "Revenue": {"cur": 246.16, "prev": null, "wow": null}}, {"Campaign": "emanual_disney_sq_2026_02", "UV": {"cur": 16.0, "prev": null, "wow": null}, "Order UV": {"cur": 2.0, "prev": null, "wow": null}, "Revenue": {"cur": 129.35, "prev": null, "wow": null}}, {"Campaign": "emanual_sale_flash_cxy_2026_307", "UV": {"cur": 95.0, "prev": null, "wow": null}, "Order UV": {"cur": 2.0, "prev": null, "wow": null}, "Revenue": {"cur": 94.66, "prev": null, "wow": null}}, {"Campaign": "emanual_member1_cxy_2026_304", "UV": {"cur": 11.0, "prev": null, "wow": null}, "Order UV": {"cur": 1.0, "prev": null, "wow": null}, "Revenue": {"cur": 59.07, "prev": null, "wow": null}}, {"Campaign": "emanual_member2_cxy_2026_304", "UV": {"cur": 8.0, "prev": null, "wow": null}, "Order UV": {"cur": 1.0, "prev": null, "wow": null}, "Revenue": {"cur": 56.19, "prev": null, "wow": null}}, {"Campaign": "manual_disney_sq_2026_224", "UV": {"cur": 1.0, "prev": null, "wow": null}, "Order UV": {"cur": 1.0, "prev": null, "wow": null}, "Revenue": {"cur": 52.82, "prev": null, "wow": null}}, {"Campaign": "emanual_women_sq_2026_305", "UV": {"cur": 26.0, "prev": null, "wow": null}, "Order UV": {"cur": 1.0, "prev": null, "wow": null}, "Revenue": {"cur": 45.66, "prev": null, "wow": null}}, {"Campaign": "emanual_barbie_sq_2026_02", "UV": {"cur": 4.0, "prev": null, "wow": null}, "Order UV": {"cur": 0.0, "prev": null, "wow": null}, "Revenue": {"cur": 0.0, "prev": null, "wow": null}}, {"Campaign": "emanual_easter_cxy_2026_02", "UV": {"cur": 8.0, "prev": null, "wow": null}, "Order UV": {"cur": 0.0, "prev": null, "wow": null}, "Revenue": {"cur": 0.0, "prev": null, "wow": null}}, {"Campaign": "sale_2026_02", "UV": {"cur": 46.0, "prev": 22.0, "wow": 1.0909090909090908}, "Order UV": {"cur": 0.0, "prev": 0.0, "wow": null}, "Revenue": {"cur": 0.0, "prev": 0.0, "wow": null}}], "carryover_totals": {"UV": {"cur": 435.0, "prev": 3596.0, "wow": -0.8790322580645161}, "Order UV": {"cur": 12.0, "prev": 34.0, "wow": -0.6470588235294118}, "Revenue": {"cur": 683.91, "prev": 2359.57, "wow": -0.710154816343656}}, "auto_rows": [{"指标": "Send", "type": "count", "value": {"cur": 45244.0, "prev": 41930.0, "wow": 0.0790364893870737}}, {"指标": "Delivered", "type": "count", "value": {"cur": 44850.0, "prev": 41537.0, "wow": 0.07976021378529985}}, {"指标": "Open rate", "type": "rate", "value": {"cur": 0.3157190635451505, "prev": 0.3337265570455257, "wow": -0.05395882683054996}}, {"指标": "CTR", "type": "rate", "value": {"cur": 0.005105908584169453, "prev": 0.0052242578905554084, "wow": -0.022653802485499603}}, {"指标": "CTO", "type": "rate", "value": {"cur": 0.01617231638418079, "prev": 0.015654306737844466, "wow": 0.03309055169361351}}, {"指标": "UV", "type": "count", "value": {"cur": 145.0, "prev": 104.0, "wow": 0.3942307692307692}}, {"指标": "Order UV", "type": "count", "value": {"cur": 30.0, "prev": 12.0, "wow": 1.5}}, {"指标": "Revenue", "type": "money", "value": {"cur": 2280.83, "prev": 1111.04, "wow": 1.0528783842165899}}, {"指标": "CVR", "type": "rate", "value": {"cur": 0.20689655172413793, "prev": 0.11538461538461539, "wow": 0.793103448275862}}, {"指标": "ARPU", "type": "money", "value": {"cur": 0.0508546265328874, "prev": 0.02674820039964369, "wow": 0.9012354391349944}}, {"指标": "Included automation families", "type": "count", "value": {"cur": 3.0, "prev": 3.0, "wow": 0.0}}, {"指标": "Excluded automation families", "type": "count", "value": {"cur": 8.0, "prev": 8.0, "wow": 0.0}}], "auto_bullets": ["当前周与上周均使用同一自动化白名单：subscribe-welcome、abandoned-browse、abandoned-cart。", "若上周同口径数据缺失，则显示“上周数据未提供”，不会伪造 WoW。", "Excluded automation families 用于解释为什么自动化总量和全量 email 归因存在差异。"], "raw_rows": [{"Theme": "IP主题", "日期": "2026-03-08", "站点": "EMEA_DE", "人群": "Active", "原始campaign": "Ramp up_emea_de_260308_IP_10am_Active", "标准化campaignKey": "ramp up_emea_de_260308_ip_10am_active", "发送数": {"cur": 83026.0, "prev": null, "wow": null}, "打开率": {"cur": 0.4205316776176985, "prev": null, "wow": null}, "点击率": {"cur": 0.0004701910904816445, "prev": null, "wow": null}, "退订率": {"cur": 0.0005304719995177528, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "IP主题", "日期": "2026-03-08", "站点": "EMEA_UK", "人群": "Active", "原始campaign": "Ramp up_emea_uk_260308_IP_10am_Active", "标准化campaignKey": "ramp up_emea_uk_260308_ip_10am_active", "发送数": {"cur": 171621.0, "prev": null, "wow": null}, "打开率": {"cur": 0.5732971012379947, "prev": null, "wow": null}, "点击率": {"cur": 0.0002915672908150472, "prev": null, "wow": null}, "退订率": {"cur": 0.0004606763194877746, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "IP主题", "日期": "2026-03-08", "站点": "EMEA_FR", "人群": "Active", "原始campaign": "Ramp up_emea_fr_260308_IP_10am_Active", "标准化campaignKey": "ramp up_emea_fr_260308_ip_10am_active", "发送数": {"cur": 47298.0, "prev": null, "wow": null}, "打开率": {"cur": 0.4592061275443274, "prev": null, "wow": null}, "点击率": {"cur": 0.000507807540941983, "prev": null, "wow": null}, "退订率": {"cur": 0.0004866488934027337, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "IP主题", "日期": "2026-03-08", "站点": "NAME", "人群": "测试人群inactive", "原始campaign": "Ramp up_name_260308_IP_10am_测试人群inactive", "标准化campaignKey": "ramp up_name_260308_ip_10am_测试人群inactive", "发送数": {"cur": 544434.0, "prev": null, "wow": null}, "打开率": {"cur": 0.8807938243382036, "prev": null, "wow": null}, "点击率": {"cur": 0.00014172805147857329, "prev": null, "wow": null}, "退订率": {"cur": 0.0004896059960168896, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "IP主题", "日期": "2026-03-08", "站点": "NAME", "人群": "测试人群active", "原始campaign": "Ramp up_name_260308_IP_10am_测试人群active", "标准化campaignKey": "ramp up_name_260308_ip_10am_测试人群active", "发送数": {"cur": 435896.0, "prev": null, "wow": null}, "打开率": {"cur": 0.2503591301809556, "prev": null, "wow": null}, "点击率": {"cur": 0.0006159800863751181, "prev": null, "wow": null}, "退订率": {"cur": 0.000634367551640047, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "happy hour", "日期": "2026-03-09", "站点": "APAC_AU", "人群": "Active", "原始campaign": "Ramp up_apac_au_260309_Happyhour_5pm_Active", "标准化campaignKey": "ramp up_apac_au_260309_happyhour_5pm_active", "发送数": {"cur": 56008.0, "prev": null, "wow": null}, "打开率": {"cur": 0.5744737876567916, "prev": null, "wow": null}, "点击率": {"cur": 0.0007861916163384912, "prev": null, "wow": null}, "退订率": {"cur": 0.0003930958081692456, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "happy hour", "日期": "2026-03-09", "站点": "APAC_GLB", "人群": "Active", "原始campaign": "Ramp up_apac_glb_260309_Happyhour_5pm_Active", "标准化campaignKey": "ramp up_apac_glb_260309_happyhour_5pm_active", "发送数": {"cur": 351802.0, "prev": null, "wow": null}, "打开率": {"cur": 0.52245670995671, "prev": null, "wow": null}, "点击率": {"cur": 0.0005211893369788107, "prev": null, "wow": null}, "退订率": {"cur": 0.00044998860788334475, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "happy hour", "日期": "2026-03-09", "站点": "EMEA_FR", "人群": "Active", "原始campaign": "Ramp up_emea_fr_260309_Happyhour_5pm_Active", "标准化campaignKey": "ramp up_emea_fr_260309_happyhour_5pm_active", "发送数": {"cur": 47172.0, "prev": null, "wow": null}, "打开率": {"cur": 0.47251045048486007, "prev": null, "wow": null}, "点击率": {"cur": 0.00042438517198209095, "prev": null, "wow": null}, "退订率": {"cur": 0.00046682368918030007, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "happy hour", "日期": "2026-03-09", "站点": "EMEA_DE", "人群": "Active", "原始campaign": "Ramp up_emea_de_260309_Happyhour_5pm_Active", "标准化campaignKey": "ramp up_emea_de_260309_happyhour_5pm_active", "发送数": {"cur": 82824.0, "prev": null, "wow": null}, "打开率": {"cur": 0.43518305875527297, "prev": null, "wow": null}, "点击率": {"cur": 0.0005439183880676392, "prev": null, "wow": null}, "退订率": {"cur": 0.000688963291552343, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "happy hour", "日期": "2026-03-09", "站点": "EMEA_UK", "人群": "Active", "原始campaign": "Ramp up_emea_uk_260309_Happyhour_5pm_Active", "标准化campaignKey": "ramp up_emea_uk_260309_happyhour_5pm_active", "发送数": {"cur": 170944.0, "prev": null, "wow": null}, "打开率": {"cur": 0.5829225455184123, "prev": null, "wow": null}, "点击率": {"cur": 0.0003337041156840934, "prev": null, "wow": null}, "退订率": {"cur": 0.0004625021954218137, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "happy hour", "日期": "2026-03-09", "站点": "NAME", "人群": "测试人群inactive", "原始campaign": "Ramp up_name_260309_Happyhour_5pm_测试人群inactive", "标准化campaignKey": "ramp up_name_260309_happyhour_5pm_测试人群inactive", "发送数": {"cur": 544867.0, "prev": null, "wow": null}, "打开率": {"cur": 0.878130662325359, "prev": null, "wow": null}, "点击率": {"cur": 0.0001342862135886611, "prev": null, "wow": null}, "退订率": {"cur": 0.0005849728208382771, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "happy hour", "日期": "2026-03-09", "站点": "NAME", "人群": "测试人群active", "原始campaign": "Ramp up_name_260309_Happyhour_5pm_测试人群active", "标准化campaignKey": "ramp up_name_260309_happyhour_5pm_测试人群active", "发送数": {"cur": 434154.0, "prev": null, "wow": null}, "打开率": {"cur": 0.26810580779757864, "prev": null, "wow": null}, "点击率": {"cur": 0.0008561920454912604, "prev": null, "wow": null}, "退订率": {"cur": 0.00048002141634011366, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "复活节", "日期": "2026-03-10", "站点": "APAC_AU", "人群": "Active", "原始campaign": "Ramp up_apac_au_260310__easter_10am_Active", "标准化campaignKey": "ramp up_apac_au_260310_easter_10am_active", "发送数": {"cur": 55875.0, "prev": null, "wow": null}, "打开率": {"cur": 0.5636002220590606, "prev": null, "wow": null}, "点击率": {"cur": 0.00044769971884457655, "prev": null, "wow": null}, "退订率": {"cur": 0.0004835156963521427, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "复活节", "日期": "2026-03-10", "站点": "APAC_GLB", "人群": "Active", "原始campaign": "Ramp up_apac_glb_260310_easter_10am_Active", "标准化campaignKey": "ramp up_apac_glb_260310_easter_10am_active", "发送数": {"cur": 350920.0, "prev": null, "wow": null}, "打开率": {"cur": 0.5156098340812808, "prev": null, "wow": null}, "点击率": {"cur": 0.00036826419101777943, "prev": null, "wow": null}, "退订率": {"cur": 0.0004681808319915956, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "复活节", "日期": "2026-03-10", "站点": "EMEA_DE", "人群": "Active", "原始campaign": "Ramp up_emea_de_260310_easter_10am_Active", "标准化campaignKey": "ramp up_emea_de_260310_easter_10am_active", "发送数": {"cur": 82640.0, "prev": null, "wow": null}, "打开率": {"cur": 0.4287894571089416, "prev": null, "wow": null}, "点击率": {"cur": 0.0006783110055960658, "prev": null, "wow": null}, "退订率": {"cur": 0.0006177475229535599, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "复活节", "日期": "2026-03-10", "站点": "EMEA_FR", "人群": "Active", "原始campaign": "Ramp up_emea_fr_260310_easter_10am_Active", "标准化campaignKey": "ramp up_emea_fr_260310_easter_10am_active", "发送数": {"cur": 47089.0, "prev": null, "wow": null}, "打开率": {"cur": 0.4615760615463085, "prev": null, "wow": null}, "点击率": {"cur": 0.00046754792366217535, "prev": null, "wow": null}, "退订率": {"cur": 0.000488800102010456, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "复活节", "日期": "2026-03-10", "站点": "EMEA_UK", "人群": "Active", "原始campaign": "Ramp up_emea_uk_260310_easter_10am_Active", "标准化campaignKey": "ramp up_emea_uk_260310_easter_10am_active", "发送数": {"cur": 170354.0, "prev": null, "wow": null}, "打开率": {"cur": 0.572963415493785, "prev": null, "wow": null}, "点击率": {"cur": 0.0002643389177377288, "prev": null, "wow": null}, "退订率": {"cur": 0.00037594868300476985, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "复活节", "日期": "2026-03-09", "站点": "NAME", "人群": "Active - Test 1", "原始campaign": "Ramp up_name_260309_easter_10am_Active - Test 1", "标准化campaignKey": "ramp up_name_260309_easter_10am_active -", "发送数": {"cur": 75170.0, "prev": null, "wow": null}, "打开率": {"cur": 0.49459157030958595, "prev": null, "wow": null}, "点击率": {"cur": 0.0004262801726434699, "prev": null, "wow": null}, "退订率": {"cur": 0.00041295891724836147, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "复活节", "日期": "2026-03-09", "站点": "NAME", "人群": "Active - Final Test 3", "原始campaign": "Ramp up_name_260309_easter_10am_Active - Final Test 3", "标准化campaignKey": "ramp up_name_260309_easter_10am_active -", "发送数": {"cur": 674679.0, "prev": null, "wow": null}, "打开率": {"cur": 0.49450896959853197, "prev": null, "wow": null}, "点击率": {"cur": 0.0005300251056709717, "prev": null, "wow": null}, "退订率": {"cur": 0.0004973624941170182, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "Member Day", "日期": "2026-03-11", "站点": "APAC_AU", "人群": "Active", "原始campaign": "Ramp up_apac_au_260311_member_10am_Active", "标准化campaignKey": "ramp up_apac_au_260311_member_10am_active", "发送数": {"cur": 27934.0, "prev": null, "wow": null}, "打开率": {"cur": 0.2243201605101931, "prev": null, "wow": null}, "点击率": {"cur": 0.000859876034538354, "prev": null, "wow": null}, "退订率": {"cur": 0.0002507971767403533, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "Member Day", "日期": "2026-03-11", "站点": "APAC_GLB", "人群": "Active", "原始campaign": "Ramp up_apac_glb_260311_member_10am_Active", "标准化campaignKey": "ramp up_apac_glb_260311_member_10am_active", "发送数": {"cur": 216784.0, "prev": null, "wow": null}, "打开率": {"cur": 0.2924531356234014, "prev": null, "wow": null}, "点击率": {"cur": 0.0006151455304820798, "prev": null, "wow": null}, "退订率": {"cur": 0.0005642688324722837, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "迪士尼-竹纤维", "日期": "2026-03-11", "站点": "APAC_AU", "人群": "Active", "原始campaign": "Ramp up_apac_au_260311_Disney_3pm_Active", "标准化campaignKey": "ramp up_apac_au_260311_disney_3pm_active", "发送数": {"cur": 27892.0, "prev": null, "wow": null}, "打开率": {"cur": 0.21813549590928663, "prev": null, "wow": null}, "点击率": {"cur": 0.0007535524616047079, "prev": null, "wow": null}, "退订率": {"cur": 0.0005023683077364719, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "Member Day", "日期": "2026-03-11", "站点": "APAC_FR", "人群": "Active", "原始campaign": "Ramp up_apac_fr_260311_member_10am_Active", "标准化campaignKey": "ramp up_apac_fr_260311_member_10am_active", "发送数": {"cur": 26866.0, "prev": null, "wow": null}, "打开率": {"cur": 0.1789359958274346, "prev": null, "wow": null}, "点击率": {"cur": 0.0009313762014752999, "prev": null, "wow": null}, "退订率": {"cur": 0.00044706057670814396, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "Member Day", "日期": "2026-03-11", "站点": "APAC_DE", "人群": "Active", "原始campaign": "Ramp up_apac_de_260311_member_10am_Active", "标准化campaignKey": "ramp up_apac_de_260311_member_10am_active", "发送数": {"cur": 55778.0, "prev": null, "wow": null}, "打开率": {"cur": 0.22935549293752355, "prev": null, "wow": null}, "点击率": {"cur": 0.0007358615862304145, "prev": null, "wow": null}, "退订率": {"cur": 0.0004845917762980778, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "Member Day", "日期": "2026-03-11", "站点": "EMEA_UK", "人群": "Active", "原始campaign": "Ramp up_emea_uk_260311_member_10am_Active", "标准化campaignKey": "ramp up_emea_uk_260311_member_10am_active", "发送数": {"cur": 86724.0, "prev": null, "wow": null}, "打开率": {"cur": 0.2718733411802719, "prev": null, "wow": null}, "点击率": {"cur": 0.000576980775000577, "prev": null, "wow": null}, "退订率": {"cur": 0.0004615846200004616, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "Member Day", "日期": "2026-03-11", "站点": "NAME", "人群": "Active - Test 1 [Version #a]", "原始campaign": "Ramp up_name_260311_member_10am_Active - Test 1 [Version #a]", "标准化campaignKey": "ramp up_name_260311_member_10am_active -", "发送数": {"cur": 193242.0, "prev": null, "wow": null}, "打开率": {"cur": 0.2219117433589781, "prev": null, "wow": null}, "点击率": {"cur": 0.0007880057234099911, "prev": null, "wow": null}, "退订率": {"cur": 0.0003110548908197333, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "Member Day", "日期": "2026-03-11", "站点": "NAME", "人群": "Active - Final Test 2 [Version #b]", "原始campaign": "Ramp up_name_260311_member_10am_Active - Final Test 2 [Version #b]", "标准化campaignKey": "ramp up_name_260311_member_10am_active -", "发送数": {"cur": 193415.0, "prev": null, "wow": null}, "打开率": {"cur": 0.22312859636310903, "prev": null, "wow": null}, "点击率": {"cur": 0.0008183263672006505, "prev": null, "wow": null}, "退订率": {"cur": 0.00034701181393951636, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "迪士尼-竹纤维", "日期": "2026-03-11", "站点": "NAME", "人群": "Active - Test 1 [Version #a]", "原始campaign": "Ramp up_name_260311_Disney_3pm_Active - Test 1 [Version #a]", "标准化campaignKey": "ramp up_name_260311_disney_3pm_active -", "发送数": {"cur": 43169.0, "prev": null, "wow": null}, "打开率": {"cur": 0.2453942178291336, "prev": null, "wow": null}, "点击率": {"cur": 0.00041765279131282193, "prev": null, "wow": null}, "退订率": {"cur": 0.0005568703884170959, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "迪士尼-竹纤维", "日期": "2026-03-11", "站点": "NAME", "人群": "Active - Test 2 [Version #b]", "原始campaign": "Ramp up_name_260311_Disney_3pm_Active - Test 2 [Version #b]", "标准化campaignKey": "ramp up_name_260311_disney_3pm_active -", "发送数": {"cur": 43130.0, "prev": null, "wow": null}, "打开率": {"cur": 0.2487866050486519, "prev": null, "wow": null}, "点击率": {"cur": 0.0008824690555258818, "prev": null, "wow": null}, "退订率": {"cur": 0.0005341260072919811, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "迪士尼-竹纤维", "日期": "2026-03-11", "站点": "NAME", "人群": "Active - Final Test 3 [Version #a]", "原始campaign": "Ramp up_name_260311_Disney_3pm_Active - Final Test 3 [Version #a]", "标准化campaignKey": "ramp up_name_260311_disney_3pm_active -", "发送数": {"cur": 344261.0, "prev": null, "wow": null}, "打开率": {"cur": 0.24735938545697908, "prev": null, "wow": null}, "点击率": {"cur": 0.000640148980126284, "prev": null, "wow": null}, "退订率": {"cur": 0.00042191637326505075, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "新品主题", "日期": "2026-03-12", "站点": "APAC_AU", "人群": "Active", "原始campaign": "Ramp up_apac_au_260312_New_10am_Active", "标准化campaignKey": "ramp up_apac_au_260312_new_10am_active", "发送数": {"cur": 55517.0, "prev": null, "wow": null}, "打开率": {"cur": 0.553500279445436, "prev": null, "wow": null}, "点击率": {"cur": 0.00032451728054518905, "prev": null, "wow": null}, "退订率": {"cur": 0.0004146609695855193, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "新品主题", "日期": "2026-03-12", "站点": "APAC_GLB", "人群": "Active", "原始campaign": "Ramp up_apac_glb_260312_New_10am_Active", "标准化campaignKey": "ramp up_apac_glb_260312_new_10am_active", "发送数": {"cur": 348507.0, "prev": null, "wow": null}, "打开率": {"cur": 0.504251336360212, "prev": null, "wow": null}, "点击率": {"cur": 0.0003076719584326558, "prev": null, "wow": null}, "退订率": {"cur": 0.0005348316286773269, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "新品主题", "日期": "2026-03-12", "站点": "EMEA_DE", "人群": "Active", "原始campaign": "Ramp up_emea_de_260312_New_10am_Active", "标准化campaignKey": "ramp up_emea_de_260312_new_10am_active", "发送数": {"cur": 82163.0, "prev": null, "wow": null}, "打开率": {"cur": 0.4221518216156939, "prev": null, "wow": null}, "点击率": {"cur": 0.0004995735347873766, "prev": null, "wow": null}, "退订率": {"cur": 0.0007554526623613988, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "新品主题", "日期": "2026-03-12", "站点": "EMEA_FR", "人群": "Active", "原始campaign": "Ramp up_emea_fr_260312_New_10am_Active", "标准化campaignKey": "ramp up_emea_fr_260312_new_10am_active", "发送数": {"cur": 46834.0, "prev": null, "wow": null}, "打开率": {"cur": 0.45393541769068024, "prev": null, "wow": null}, "点击率": {"cur": 0.0005128972282178959, "prev": null, "wow": null}, "退订率": {"cur": 0.0005556386639027205, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "新品主题", "日期": "2026-03-12", "站点": "EMEA_UK", "人群": "Active", "原始campaign": "Ramp up_emea_uk_260312_New_10am_Active", "标准化campaignKey": "ramp up_emea_uk_260312_new_10am_active", "发送数": {"cur": 169310.0, "prev": null, "wow": null}, "打开率": {"cur": 0.5665257869070489, "prev": null, "wow": null}, "点击率": {"cur": 0.0002659967489286242, "prev": null, "wow": null}, "退订率": {"cur": 0.0006383921974286981, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "新品主题", "日期": "2026-03-12", "站点": "NAME", "人群": "Active - Test 1 [Version #a]", "原始campaign": "Ramp up_name_260312_New_10am_Active - Test 1 [Version #a]", "标准化campaignKey": "ramp up_name_260312_new_10am_active -", "发送数": {"cur": 74132.0, "prev": null, "wow": null}, "打开率": {"cur": 0.47926858934508204, "prev": null, "wow": null}, "点击率": {"cur": 0.00043246749736465116, "prev": null, "wow": null}, "退订率": {"cur": 0.0004054382787793605, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "新品主题", "日期": "2026-03-12", "站点": "NAME", "人群": "Active - Test 2 [Version #b]", "原始campaign": "Ramp up_name_260312_New_10am_Active - Test 2 [Version #b]", "标准化campaignKey": "ramp up_name_260312_new_10am_active -", "发送数": {"cur": 74185.0, "prev": null, "wow": null}, "打开率": {"cur": 0.4813749324689357, "prev": null, "wow": null}, "点击率": {"cur": 0.00041869259859535386, "prev": null, "wow": null}, "退订率": {"cur": 0.000567260940032415, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "新品主题", "日期": "2026-03-12", "站点": "NAME", "人群": "Active - Final Test 3 [Version #a]", "原始campaign": "Ramp up_name_260312_New_10am_Active - Final Test 3 [Version #a]", "标准化campaignKey": "ramp up_name_260312_new_10am_active -", "发送数": {"cur": 591761.0, "prev": null, "wow": null}, "打开率": {"cur": 0.4826362793091074, "prev": null, "wow": null}, "点击率": {"cur": 0.0003910137921228494, "prev": null, "wow": null}, "退订率": {"cur": 0.00044687290528325647, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "bamboo-睡眠日", "日期": "2026-03-13", "站点": "APAC_AU", "人群": "Active", "原始campaign": "Ramp up_apac_au_260313_bamboo_3pm_Active", "标准化campaignKey": "ramp up_apac_au_260313_bamboo_3pm_active", "发送数": {"cur": 31.0, "prev": null, "wow": null}, "打开率": {"cur": 0.3548387096774194, "prev": null, "wow": null}, "点击率": {"cur": 0.0, "prev": null, "wow": null}, "退订率": {"cur": 0.0, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "Flash sale", "日期": "2026-03-13", "站点": "APAC_GLB", "人群": "Active", "原始campaign": "Ramp up_apac_glb_260313_Flash Sale_10am_Active", "标准化campaignKey": "ramp up_apac_glb_260313_flash sale_10am_active", "发送数": {"cur": 215415.0, "prev": null, "wow": null}, "打开率": {"cur": 0.28550798227920043, "prev": null, "wow": null}, "点击率": {"cur": 0.0007500128107778239, "prev": null, "wow": null}, "退订率": {"cur": 0.0004565295369951971, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "Flash sale", "日期": "2026-03-13", "站点": "APAC_AU", "人群": "Active", "原始campaign": "Ramp up_apac_au_260313_Flash Sale_10am_Active", "标准化campaignKey": "ramp up_apac_au_260313_flash sale_10am_active", "发送数": {"cur": 55363.0, "prev": null, "wow": null}, "打开率": {"cur": 0.5440360171406874, "prev": null, "wow": null}, "点击率": {"cur": 0.0008317211202921872, "prev": null, "wow": null}, "退订率": {"cur": 0.0004158605601460936, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "Flash sale", "日期": "2026-03-13", "站点": "EMEA_FR", "人群": "Active", "原始campaign": "Ramp up_emea_fr_260313_Flash Sale_10am_Active", "标准化campaignKey": "ramp up_emea_fr_260313_flash sale_10am_active", "发送数": {"cur": 26684.0, "prev": null, "wow": null}, "打开率": {"cur": 0.16657287563308948, "prev": null, "wow": null}, "点击率": {"cur": 0.0006002626148940161, "prev": null, "wow": null}, "退订率": {"cur": 0.00022509848058525604, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "Flash sale", "日期": "2026-03-13", "站点": "EMEA_DE", "人群": "Active", "原始campaign": "Ramp up_emea_de_260313_Flash Sale_10am_Active", "标准化campaignKey": "ramp up_emea_de_260313_flash sale_10am_active", "发送数": {"cur": 55616.0, "prev": null, "wow": null}, "打开率": {"cur": 0.22262852613755088, "prev": null, "wow": null}, "点击率": {"cur": 0.0009727276002449832, "prev": null, "wow": null}, "退订率": {"cur": 0.0005944446445941564, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "bamboo-睡眠日", "日期": "2026-03-13", "站点": "GLB", "人群": "Active", "原始campaign": "Ramp up_glb_260313_bamboo_3pm_Active", "标准化campaignKey": "ramp up_glb_260313_bamboo_3pm_active", "发送数": {"cur": 1074.0, "prev": null, "wow": null}, "打开率": {"cur": 0.3448598130841122, "prev": null, "wow": null}, "点击率": {"cur": 0.0, "prev": null, "wow": null}, "退订率": {"cur": 0.0, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "Flash sale", "日期": "2026-03-13", "站点": "EMEA_UK", "人群": "Active", "原始campaign": "Ramp up_emea_uk_260313_Flash Sale_10am_Active", "标准化campaignKey": "ramp up_emea_uk_260313_flash sale_10am_active", "发送数": {"cur": 86337.0, "prev": null, "wow": null}, "打开率": {"cur": 0.26555342958195627, "prev": null, "wow": null}, "点击率": {"cur": 0.0007537542761059895, "prev": null, "wow": null}, "退订率": {"cur": 0.0004870412245607932, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "bamboo-睡眠日", "日期": "2026-03-13", "站点": "FR", "人群": "Active", "原始campaign": "Ramp up_fr_260313_bamboo_3pm_Active", "标准化campaignKey": "ramp up_fr_260313_bamboo_3pm_active", "发送数": {"cur": 11.0, "prev": null, "wow": null}, "打开率": {"cur": 0.2727272727272727, "prev": null, "wow": null}, "点击率": {"cur": 0.0, "prev": null, "wow": null}, "退订率": {"cur": 0.0, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "bamboo-睡眠日", "日期": "2026-03-13", "站点": "DE", "人群": "Active", "原始campaign": "Ramp up_de_260313_bamboo_3pm_Active", "标准化campaignKey": "ramp up_de_260313_bamboo_3pm_active", "发送数": {"cur": 20.0, "prev": null, "wow": null}, "打开率": {"cur": 0.1, "prev": null, "wow": null}, "点击率": {"cur": 0.0, "prev": null, "wow": null}, "退订率": {"cur": 0.0, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "bamboo-睡眠日", "日期": "2026-03-13", "站点": "APAC_UK", "人群": "Active", "原始campaign": "Ramp up_apac_uk_260313_bamboo_3pm_Active", "标准化campaignKey": "ramp up_apac_uk_260313_bamboo_3pm_active", "发送数": {"cur": 31.0, "prev": null, "wow": null}, "打开率": {"cur": 0.2903225806451613, "prev": null, "wow": null}, "点击率": {"cur": 0.0, "prev": null, "wow": null}, "退订率": {"cur": 0.0, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "Flash sale", "日期": "2026-03-13", "站点": "NAME", "人群": "Active - Test 1 [Version #a]", "原始campaign": "Ramp up_name_260313_Flash Sale2_10am_Active - Test 1 [Version #a]", "标准化campaignKey": "ramp up_name_260313_flash sale2_10am_active -", "发送数": {"cur": 20677.0, "prev": null, "wow": null}, "打开率": {"cur": 0.00868426159518727, "prev": null, "wow": null}, "点击率": {"cur": 0.00024257713953037066, "prev": null, "wow": null}, "退订率": {"cur": 0.00024257713953037066, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "Flash sale", "日期": "2026-03-13", "站点": "NAME", "人群": "Active - Test 1 [Version #a]", "原始campaign": "Ramp up_name_260313_Flash Sale_10am_Active - Test 1 [Version #a]", "标准化campaignKey": "ramp up_name_260313_flash sale_10am_active -", "发送数": {"cur": 47737.0, "prev": null, "wow": null}, "打开率": {"cur": 0.3135362014690451, "prev": null, "wow": null}, "点击率": {"cur": 0.00161594963273872, "prev": null, "wow": null}, "退订率": {"cur": 0.00033578174186778596, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "Flash sale", "日期": "2026-03-13", "站点": "NAME", "人群": "Active - Test 2 [Version #b]", "原始campaign": "Ramp up_name_260313_Flash Sale_10am_Active - Test 2 [Version #b]", "标准化campaignKey": "ramp up_name_260313_flash sale_10am_active -", "发送数": {"cur": 47774.0, "prev": null, "wow": null}, "打开率": {"cur": 0.31808653362401473, "prev": null, "wow": null}, "点击率": {"cur": 0.0014883447928894851, "prev": null, "wow": null}, "退订率": {"cur": 0.0003773268489015596, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "Flash sale", "日期": "2026-03-13", "站点": "NAME", "人群": "Active - Test 2 [Version #b]", "原始campaign": "Ramp up_name_260313_Flash Sale2_10am_Active - Test 2 [Version #b]", "标准化campaignKey": "ramp up_name_260313_flash sale2_10am_active -", "发送数": {"cur": 20674.0, "prev": null, "wow": null}, "打开率": {"cur": 0.007857974388824214, "prev": null, "wow": null}, "点击率": {"cur": 9.701202949165696e-05, "prev": null, "wow": null}, "退订率": {"cur": 4.850601474582848e-05, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "Flash sale", "日期": "2026-03-13", "站点": "NAME", "人群": "Active - Final Test 3 [Version #a]", "原始campaign": "Ramp up_name_260313_Flash Sale_10am_Active - Final Test 3 [Version #a]", "标准化campaignKey": "ramp up_name_260313_flash sale_10am_active -", "发送数": {"cur": 222174.0, "prev": null, "wow": null}, "打开率": {"cur": 0.31416627583967677, "prev": null, "wow": null}, "点击率": {"cur": 0.0014385439590172805, "prev": null, "wow": null}, "退订率": {"cur": 0.0003246870377719254, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "Flash sale", "日期": "2026-03-13", "站点": "NAME", "人群": "Active - Final Test 3 [Version #a]", "原始campaign": "Ramp up_name_260313_Flash Sale2_10am_Active - Final Test 3 [Version #a]", "标准化campaignKey": "ramp up_name_260313_flash sale2_10am_active -", "发送数": {"cur": 96332.0, "prev": null, "wow": null}, "打开率": {"cur": 0.008865322110175848, "prev": null, "wow": null}, "点击率": {"cur": 0.00025002083506958916, "prev": null, "wow": null}, "退订率": {"cur": 9.375781315109593e-05, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "bamboo-睡眠日", "日期": "2026-03-13", "站点": "NAME", "人群": "Active", "原始campaign": "Ramp up_name_260313_bamboo_3pm_Active", "标准化campaignKey": "ramp up_name_260313_bamboo_3pm_active", "发送数": {"cur": 732372.0, "prev": null, "wow": null}, "打开率": {"cur": 0.47609914913408663, "prev": null, "wow": null}, "点击率": {"cur": 0.00028726984213838197, "prev": null, "wow": null}, "退订率": {"cur": 0.0004144893436568083, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "亲子-大码主题", "日期": "2026-03-14", "站点": "APAC_AU", "人群": "Active", "原始campaign": "Ramp up_apac_au_260314_plus_size_10am_Active", "标准化campaignKey": "ramp up_apac_au_260314_plus_size_10am_active", "发送数": {"cur": 27512.0, "prev": null, "wow": null}, "打开率": {"cur": 0.2004293875768713, "prev": null, "wow": null}, "点击率": {"cur": 0.0002911102216076562, "prev": null, "wow": null}, "退订率": {"cur": 0.00021833266620574214, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "亲子-大码主题", "日期": "2026-03-14", "站点": "APAC_GLB", "人群": "Active", "原始campaign": "Ramp up_apac_glb_260314_plus_size_10am_Active", "标准化campaignKey": "ramp up_apac_glb_260314_plus_size_10am_active", "发送数": {"cur": 214851.0, "prev": null, "wow": null}, "打开率": {"cur": 0.2770377566461786, "prev": null, "wow": null}, "点击率": {"cur": 0.0004063369888093859, "prev": null, "wow": null}, "退订率": {"cur": 0.0004437013096194444, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "亲子-大码主题", "日期": "2026-03-14", "站点": "EMEA_FR", "人群": "Active", "原始campaign": "Ramp up_emea_fr_260314_plus_size_10am_Active", "标准化campaignKey": "ramp up_emea_fr_260314_plus_size_10am_active", "发送数": {"cur": 26616.0, "prev": null, "wow": null}, "打开率": {"cur": 0.1641089295117731, "prev": null, "wow": null}, "点击率": {"cur": 0.0003761378168961107, "prev": null, "wow": null}, "退订率": {"cur": 0.0002632964718272775, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "亲子-大码主题", "日期": "2026-03-14", "站点": "EMEA_DE", "人群": "Active", "原始campaign": "Ramp up_emea_de_260314_plus_size_10am_Active", "标准化campaignKey": "ramp up_emea_de_260314_plus_size_10am_active", "发送数": {"cur": 55337.0, "prev": null, "wow": null}, "打开率": {"cur": 0.21252217355102632, "prev": null, "wow": null}, "点击率": {"cur": 0.0006154291713427216, "prev": null, "wow": null}, "退订率": {"cur": 0.000579227455381385, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "亲子-大码主题", "日期": "2026-03-14", "站点": "EMEA_UK", "人群": "Active", "原始campaign": "Ramp up_emea_uk_260314_plus_size_10am_Active", "标准化campaignKey": "ramp up_emea_uk_260314_plus_size_10am_active", "发送数": {"cur": 85938.0, "prev": null, "wow": null}, "打开率": {"cur": 0.2549663858692486, "prev": null, "wow": null}, "点击率": {"cur": 0.0004194484253207033, "prev": null, "wow": null}, "退订率": {"cur": 0.00039614573502510863, "prev": null, "wow": null}, "是否存在上周可比项": "否"}, {"Theme": "亲子-大码主题", "日期": "2026-03-14", "站点": "NAME", "人群": "Active", "原始campaign": "Ramp up_name_260314_plus_size_10am_Active", "标准化campaignKey": "ramp up_name_260314_plus_size_10am_active", "发送数": {"cur": 425257.0, "prev": null, "wow": null}, "打开率": {"cur": 0.2316979496048595, "prev": null, "wow": null}, "点击率": {"cur": 0.0005183715593087751, "prev": null, "wow": null}, "退订率": {"cur": 0.00035579138843465927, "prev": null, "wow": null}, "是否存在上周可比项": "否"}], "raw_sites": ["NAME", "ALL", "APAC_AU", "APAC_DE", "APAC_FR", "APAC_GLB", "APAC_UK", "DE", "EMEA_DE", "EMEA_FR", "EMEA_UK", "FR", "GLB"], "mapping_rows": [{"日期": "2026-03-08", "Theme": "IP主题", "Emarsys campaign": "Ramp up_emea_de_260308_IP_10am_Active", "Matched Attribuly campaign": "emanual_ip_sq_2026_308"}, {"日期": "2026-03-08", "Theme": "IP主题", "Emarsys campaign": "Ramp up_emea_uk_260308_IP_10am_Active", "Matched Attribuly campaign": "emanual_ip_sq_2026_308"}, {"日期": "2026-03-08", "Theme": "IP主题", "Emarsys campaign": "Ramp up_emea_fr_260308_IP_10am_Active", "Matched Attribuly campaign": "emanual_ip_sq_2026_308"}, {"日期": "2026-03-08", "Theme": "IP主题", "Emarsys campaign": "Ramp up_name_260308_IP_10am_测试人群inactive", "Matched Attribuly campaign": "emanual_ip_sq_2026_308"}, {"日期": "2026-03-08", "Theme": "IP主题", "Emarsys campaign": "Ramp up_name_260308_IP_10am_测试人群active", "Matched Attribuly campaign": "emanual_ip_sq_2026_308"}, {"日期": "2026-03-09", "Theme": "happy hour", "Emarsys campaign": "Ramp up_apac_au_260309_Happyhour_5pm_Active", "Matched Attribuly campaign": "emanual_sale_happy1_sq_2026_309"}, {"日期": "2026-03-09", "Theme": "happy hour", "Emarsys campaign": "Ramp up_apac_glb_260309_Happyhour_5pm_Active", "Matched Attribuly campaign": "emanual_sale_happy1_sq_2026_309"}, {"日期": "2026-03-09", "Theme": "happy hour", "Emarsys campaign": "Ramp up_emea_fr_260309_Happyhour_5pm_Active", "Matched Attribuly campaign": "emanual_sale_happy1_sq_2026_309"}, {"日期": "2026-03-09", "Theme": "happy hour", "Emarsys campaign": "Ramp up_emea_de_260309_Happyhour_5pm_Active", "Matched Attribuly campaign": "emanual_sale_happy1_sq_2026_309"}, {"日期": "2026-03-09", "Theme": "happy hour", "Emarsys campaign": "Ramp up_emea_uk_260309_Happyhour_5pm_Active", "Matched Attribuly campaign": "emanual_sale_happy1_sq_2026_309"}, {"日期": "2026-03-09", "Theme": "happy hour", "Emarsys campaign": "Ramp up_name_260309_Happyhour_5pm_测试人群inactive", "Matched Attribuly campaign": "emanual_sale_happy1_sq_2026_309"}, {"日期": "2026-03-09", "Theme": "happy hour", "Emarsys campaign": "Ramp up_name_260309_Happyhour_5pm_测试人群active", "Matched Attribuly campaign": "emanual_sale_happy1_sq_2026_309"}, {"日期": "2026-03-10", "Theme": "复活节", "Emarsys campaign": "Ramp up_apac_au_260310__easter_10am_Active", "Matched Attribuly campaign": "emanual_holiday_easter_cxy_2026_310"}, {"日期": "2026-03-10", "Theme": "复活节", "Emarsys campaign": "Ramp up_apac_glb_260310_easter_10am_Active", "Matched Attribuly campaign": "emanual_holiday_easter_cxy_2026_310"}, {"日期": "2026-03-10", "Theme": "复活节", "Emarsys campaign": "Ramp up_emea_de_260310_easter_10am_Active", "Matched Attribuly campaign": "emanual_holiday_easter_cxy_2026_310"}, {"日期": "2026-03-10", "Theme": "复活节", "Emarsys campaign": "Ramp up_emea_fr_260310_easter_10am_Active", "Matched Attribuly campaign": "emanual_holiday_easter_cxy_2026_310"}, {"日期": "2026-03-10", "Theme": "复活节", "Emarsys campaign": "Ramp up_emea_uk_260310_easter_10am_Active", "Matched Attribuly campaign": "emanual_holiday_easter_cxy_2026_310"}, {"日期": "2026-03-09", "Theme": "复活节", "Emarsys campaign": "Ramp up_name_260309_easter_10am_Active - Test 1", "Matched Attribuly campaign": NaN}, {"日期": "2026-03-09", "Theme": "复活节", "Emarsys campaign": "Ramp up_name_260309_easter_10am_Active - Final Test 3", "Matched Attribuly campaign": NaN}, {"日期": "2026-03-11", "Theme": "Member Day", "Emarsys campaign": "Ramp up_apac_au_260311_member_10am_Active", "Matched Attribuly campaign": "emanual_sale_member1_cxy_2026_311 | emanual_sale_member2_cxy_2026_311 | emanual_sale_member3_cxy_2026_311"}, {"日期": "2026-03-11", "Theme": "Member Day", "Emarsys campaign": "Ramp up_apac_glb_260311_member_10am_Active", "Matched Attribuly campaign": "emanual_sale_member1_cxy_2026_311 | emanual_sale_member2_cxy_2026_311 | emanual_sale_member3_cxy_2026_311"}, {"日期": "2026-03-11", "Theme": "迪士尼-竹纤维", "Emarsys campaign": "Ramp up_apac_au_260311_Disney_3pm_Active", "Matched Attribuly campaign": "emanual_ip_disney_sq_2026_311"}, {"日期": "2026-03-11", "Theme": "Member Day", "Emarsys campaign": "Ramp up_apac_fr_260311_member_10am_Active", "Matched Attribuly campaign": "emanual_sale_member1_cxy_2026_311 | emanual_sale_member2_cxy_2026_311 | emanual_sale_member3_cxy_2026_311"}, {"日期": "2026-03-11", "Theme": "Member Day", "Emarsys campaign": "Ramp up_apac_de_260311_member_10am_Active", "Matched Attribuly campaign": "emanual_sale_member1_cxy_2026_311 | emanual_sale_member2_cxy_2026_311 | emanual_sale_member3_cxy_2026_311"}, {"日期": "2026-03-11", "Theme": "Member Day", "Emarsys campaign": "Ramp up_emea_uk_260311_member_10am_Active", "Matched Attribuly campaign": "emanual_sale_member1_cxy_2026_311 | emanual_sale_member2_cxy_2026_311 | emanual_sale_member3_cxy_2026_311"}, {"日期": "2026-03-11", "Theme": "Member Day", "Emarsys campaign": "Ramp up_name_260311_member_10am_Active - Test 1 [Version #a]", "Matched Attribuly campaign": "emanual_sale_member1_cxy_2026_311 | emanual_sale_member2_cxy_2026_311 | emanual_sale_member3_cxy_2026_311"}, {"日期": "2026-03-11", "Theme": "Member Day", "Emarsys campaign": "Ramp up_name_260311_member_10am_Active - Final Test 2 [Version #b]", "Matched Attribuly campaign": "emanual_sale_member1_cxy_2026_311 | emanual_sale_member2_cxy_2026_311 | emanual_sale_member3_cxy_2026_311"}, {"日期": "2026-03-11", "Theme": "迪士尼-竹纤维", "Emarsys campaign": "Ramp up_name_260311_Disney_3pm_Active - Test 1 [Version #a]", "Matched Attribuly campaign": "emanual_ip_disney_sq_2026_311"}, {"日期": "2026-03-11", "Theme": "迪士尼-竹纤维", "Emarsys campaign": "Ramp up_name_260311_Disney_3pm_Active - Test 2 [Version #b]", "Matched Attribuly campaign": "emanual_ip_disney_sq_2026_311"}, {"日期": "2026-03-11", "Theme": "迪士尼-竹纤维", "Emarsys campaign": "Ramp up_name_260311_Disney_3pm_Active - Final Test 3 [Version #a]", "Matched Attribuly campaign": "emanual_ip_disney_sq_2026_311"}, {"日期": "2026-03-12", "Theme": "新品主题", "Emarsys campaign": "Ramp up_apac_au_260312_New_10am_Active", "Matched Attribuly campaign": "emanual_new_all_sq_2026_312"}, {"日期": "2026-03-12", "Theme": "新品主题", "Emarsys campaign": "Ramp up_apac_glb_260312_New_10am_Active", "Matched Attribuly campaign": "emanual_new_all_sq_2026_312"}, {"日期": "2026-03-12", "Theme": "新品主题", "Emarsys campaign": "Ramp up_emea_de_260312_New_10am_Active", "Matched Attribuly campaign": "emanual_new_all_sq_2026_312"}, {"日期": "2026-03-12", "Theme": "新品主题", "Emarsys campaign": "Ramp up_emea_fr_260312_New_10am_Active", "Matched Attribuly campaign": "emanual_new_all_sq_2026_312"}, {"日期": "2026-03-12", "Theme": "新品主题", "Emarsys campaign": "Ramp up_emea_uk_260312_New_10am_Active", "Matched Attribuly campaign": "emanual_new_all_sq_2026_312"}, {"日期": "2026-03-12", "Theme": "新品主题", "Emarsys campaign": "Ramp up_name_260312_New_10am_Active - Test 1 [Version #a]", "Matched Attribuly campaign": "emanual_new_all_sq_2026_312"}, {"日期": "2026-03-12", "Theme": "新品主题", "Emarsys campaign": "Ramp up_name_260312_New_10am_Active - Test 2 [Version #b]", "Matched Attribuly campaign": "emanual_new_all_sq_2026_312"}, {"日期": "2026-03-12", "Theme": "新品主题", "Emarsys campaign": "Ramp up_name_260312_New_10am_Active - Final Test 3 [Version #a]", "Matched Attribuly campaign": "emanual_new_all_sq_2026_312"}, {"日期": "2026-03-13", "Theme": "bamboo-睡眠日", "Emarsys campaign": "Ramp up_apac_au_260313_bamboo_3pm_Active", "Matched Attribuly campaign": "emanual_world_sleep_day_wxy_2026_313"}, {"日期": "2026-03-13", "Theme": "Flash sale", "Emarsys campaign": "Ramp up_apac_glb_260313_Flash Sale_10am_Active", "Matched Attribuly campaign": "emanual_sale_flash_cxy_2026_313"}, {"日期": "2026-03-13", "Theme": "Flash sale", "Emarsys campaign": "Ramp up_apac_au_260313_Flash Sale_10am_Active", "Matched Attribuly campaign": "emanual_sale_flash_cxy_2026_313"}, {"日期": "2026-03-13", "Theme": "Flash sale", "Emarsys campaign": "Ramp up_emea_fr_260313_Flash Sale_10am_Active", "Matched Attribuly campaign": "emanual_sale_flash_cxy_2026_313"}, {"日期": "2026-03-13", "Theme": "Flash sale", "Emarsys campaign": "Ramp up_emea_de_260313_Flash Sale_10am_Active", "Matched Attribuly campaign": "emanual_sale_flash_cxy_2026_313"}, {"日期": "2026-03-13", "Theme": "bamboo-睡眠日", "Emarsys campaign": "Ramp up_glb_260313_bamboo_3pm_Active", "Matched Attribuly campaign": "emanual_world_sleep_day_wxy_2026_313"}, {"日期": "2026-03-13", "Theme": "Flash sale", "Emarsys campaign": "Ramp up_emea_uk_260313_Flash Sale_10am_Active", "Matched Attribuly campaign": "emanual_sale_flash_cxy_2026_313"}, {"日期": "2026-03-13", "Theme": "bamboo-睡眠日", "Emarsys campaign": "Ramp up_fr_260313_bamboo_3pm_Active", "Matched Attribuly campaign": "emanual_world_sleep_day_wxy_2026_313"}, {"日期": "2026-03-13", "Theme": "bamboo-睡眠日", "Emarsys campaign": "Ramp up_de_260313_bamboo_3pm_Active", "Matched Attribuly campaign": "emanual_world_sleep_day_wxy_2026_313"}, {"日期": "2026-03-13", "Theme": "bamboo-睡眠日", "Emarsys campaign": "Ramp up_apac_uk_260313_bamboo_3pm_Active", "Matched Attribuly campaign": "emanual_world_sleep_day_wxy_2026_313"}, {"日期": "2026-03-13", "Theme": "Flash sale", "Emarsys campaign": "Ramp up_name_260313_Flash Sale2_10am_Active - Test 1 [Version #a]", "Matched Attribuly campaign": "emanual_sale_flash_cxy_2026_313"}, {"日期": "2026-03-13", "Theme": "Flash sale", "Emarsys campaign": "Ramp up_name_260313_Flash Sale_10am_Active - Test 1 [Version #a]", "Matched Attribuly campaign": "emanual_sale_flash_cxy_2026_313"}, {"日期": "2026-03-13", "Theme": "Flash sale", "Emarsys campaign": "Ramp up_name_260313_Flash Sale_10am_Active - Test 2 [Version #b]", "Matched Attribuly campaign": "emanual_sale_flash_cxy_2026_313"}, {"日期": "2026-03-13", "Theme": "Flash sale", "Emarsys campaign": "Ramp up_name_260313_Flash Sale2_10am_Active - Test 2 [Version #b]", "Matched Attribuly campaign": "emanual_sale_flash_cxy_2026_313"}, {"日期": "2026-03-13", "Theme": "Flash sale", "Emarsys campaign": "Ramp up_name_260313_Flash Sale_10am_Active - Final Test 3 [Version #a]", "Matched Attribuly campaign": "emanual_sale_flash_cxy_2026_313"}, {"日期": "2026-03-13", "Theme": "Flash sale", "Emarsys campaign": "Ramp up_name_260313_Flash Sale2_10am_Active - Final Test 3 [Version #a]", "Matched Attribuly campaign": "emanual_sale_flash_cxy_2026_313"}, {"日期": "2026-03-13", "Theme": "bamboo-睡眠日", "Emarsys campaign": "Ramp up_name_260313_bamboo_3pm_Active", "Matched Attribuly campaign": "emanual_world_sleep_day_wxy_2026_313"}, {"日期": "2026-03-14", "Theme": "亲子-大码主题", "Emarsys campaign": "Ramp up_apac_au_260314_plus_size_10am_Active", "Matched Attribuly campaign": "emanual_plus_size_sq_2026_314"}, {"日期": "2026-03-14", "Theme": "亲子-大码主题", "Emarsys campaign": "Ramp up_apac_glb_260314_plus_size_10am_Active", "Matched Attribuly campaign": "emanual_plus_size_sq_2026_314"}, {"日期": "2026-03-14", "Theme": "亲子-大码主题", "Emarsys campaign": "Ramp up_emea_fr_260314_plus_size_10am_Active", "Matched Attribuly campaign": "emanual_plus_size_sq_2026_314"}, {"日期": "2026-03-14", "Theme": "亲子-大码主题", "Emarsys campaign": "Ramp up_emea_de_260314_plus_size_10am_Active", "Matched Attribuly campaign": "emanual_plus_size_sq_2026_314"}, {"日期": "2026-03-14", "Theme": "亲子-大码主题", "Emarsys campaign": "Ramp up_emea_uk_260314_plus_size_10am_Active", "Matched Attribuly campaign": "emanual_plus_size_sq_2026_314"}, {"日期": "2026-03-14", "Theme": "亲子-大码主题", "Emarsys campaign": "Ramp up_name_260314_plus_size_10am_Active", "Matched Attribuly campaign": "emanual_plus_size_sq_2026_314"}], "validation_summary": [{"section_name": "overall_revenue", "source_file": "/Users/chengxinyuan/patpat邮件/干点看板搭建的大事/attribuly归因数据表3.8-3.14.xlsx | /Users/chengxinyuan/patpat邮件/干点看板搭建的大事/attribuly归因数据表3.1-3.7.xlsx", "raw_total": 144401.03, "included_total": 144401.03, "dashboard_total": 144401.03, "diff": 0.0, "status": "pass", "filter_logic": "Attribuly 全表；Sessions=Clicks(UV)，Revenue=tracked conversion value"}, {"section_name": "manual_theme_revenue", "source_file": "/Users/chengxinyuan/patpat邮件/干点看板搭建的大事/attribuly归因数据表3.8-3.14.xlsx", "raw_total": 2454.93, "included_total": 1771.02, "dashboard_total": 1771.02, "diff": 0.0, "status": "pass", "filter_logic": "Medium=email AND campaign startswith(emanual/manual/sale_); theme normalized before aggregation"}, {"section_name": "manual_emarsys_send", "source_file": "/Users/chengxinyuan/patpat邮件/干点看板搭建的大事/emarsys手动邮件-TrendReporting3.8-3.14.csv", "raw_total": 9832435.0, "included_total": 9592210.0, "dashboard_total": 9592210.0, "diff": 0.0, "status": "pass", "filter_logic": "周口径 2026-03-08~2026-03-14; manual source only"}, {"section_name": "automation_revenue", "source_file": "/Users/chengxinyuan/patpat邮件/干点看板搭建的大事/attribuly归因数据表3.8-3.14.xlsx", "raw_total": 5173.44, "included_total": 2280.83, "dashboard_total": 2280.83, "diff": 0.0, "status": "pass", "filter_logic": "Medium=email AND family in (subscribe-welcome, abandoned-browse, abandoned-cart)"}, {"section_name": "carryover_revenue", "source_file": "/Users/chengxinyuan/patpat邮件/干点看板搭建的大事/attribuly归因数据表3.8-3.14.xlsx", "raw_total": 2454.93, "included_total": 683.91, "dashboard_total": 683.91, "diff": 0.0, "status": "pass", "filter_logic": "manual campaigns not in current week send-date bucket"}], "changelog": "Changelog\n- 新增 WoW 列：Executive Summary 卡片、Overall Snapshot、Manual 主题汇总、Manual 明细关键指标、Historical Carryover、Manual Total、Automation Summary。\n- 上周数据缺失板块：无\n- 口径风险：无高风险差异"};
+
+function isMissing(v) {
+  return v === null || v === undefined || Number.isNaN(Number(v));
+}
+function fmtCount(v) {
+  if (isMissing(v)) return '—';
+  return Math.round(Number(v)).toLocaleString();
+}
+function fmtMoney(v) {
+  if (isMissing(v)) return '—';
+  return Number(v).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function fmtRate(v) {
+  if (isMissing(v)) return '—';
+  const n = Number(v) * 100;
+  if (n !== 0 && Math.abs(n) < 0.01) return '<0.01%';
+  return `${n.toFixed(2)}%`;
+}
+function fmtDelta(v) {
+  if (isMissing(v)) return '—';
+  const n = Number(v) * 100;
+  if (n !== 0 && Math.abs(n) < 0.01) return `${n > 0 ? '+' : '-'}<0.01%`;
+  return `${n >= 0 ? '+' : ''}${n.toFixed(2)}%`;
+}
+function deltaCls(v) {
+  if (isMissing(v)) return 'na';
+  return Number(v) >= 0 ? 'up' : 'down';
+}
+function fmtPair(obj, t) {
+  if (!obj || obj.prev === null || obj.prev === undefined) return '上周数据未提供';
+  const f = t === 'money' ? fmtMoney : (t === 'rate' ? fmtRate : fmtCount);
+  return `<span>${f(obj.cur)} / ${f(obj.prev)} / </span><span class="delta ${deltaCls(obj.wow)}">${fmtDelta(obj.wow)}</span>`;
+}
+
+function renderTable(id, rows, cols) {
+  const table = document.getElementById(id);
+  const colgroup = '<colgroup>' + cols.map(c => `<col style="width:${c.w || 120}px">`).join('') + '</colgroup>';
+  const head = '<thead><tr>' + cols.map(c => `<th class="${c.num ? 'num' : 'text'}">${c.label}</th>`).join('') + '</tr></thead>';
+  const body = '<tbody>' + rows.map(r => '<tr>' + cols.map(c => {
+    const raw = r[c.key];
+    let txt = '';
+    let cls = c.num ? 'num' : 'text';
+    if (c.type === 'count') txt = fmtCount(raw);
+    else if (c.type === 'money') txt = fmtMoney(raw);
+    else if (c.type === 'rate') txt = fmtRate(raw);
+    else if (c.type === 'delta') {
+      txt = fmtDelta(raw);
+      cls = 'delta ' + deltaCls(raw);
+    } else if (c.type === 'pair_count') txt = fmtPair(raw, 'count');
+    else if (c.type === 'pair_money') txt = fmtPair(raw, 'money');
+    else if (c.type === 'pair_rate') txt = fmtPair(raw, 'rate');
+    else txt = raw ?? '—';
+    return `<td class="${cls}">${txt}</td>`;
+  }).join('') + '</tr>').join('') + '</tbody>';
+  table.innerHTML = colgroup + head + body;
+}
+
+function renderSummaryCards() {
+  const cards = document.getElementById('summaryCards');
+  const c = DATA.summary_cards;
+  cards.innerHTML = c.map(x => `
+    <div class="card">
+      <div class="k">${x.label}</div>
+      <div class="v">${x.type === 'money' ? fmtMoney(x.value.cur) : (x.type === 'rate' ? fmtRate(x.value.cur) : fmtCount(x.value.cur))}</div>
+      <div class="w ${deltaCls(x.value.wow)}">WoW ${fmtDelta(x.value.wow)}</div>
+    </div>
+  `).join('');
+  const qaPass = DATA.validation_summary.every(x => x.status !== 'warning');
+  document.getElementById('qaBadge').textContent = qaPass ? 'Data QA: pass' : 'Data QA: warning';
+  document.getElementById('qaBadge').className = 'badge ' + (qaPass ? 'status-pass' : 'status-warning');
+  document.getElementById('takeaways').innerHTML = DATA.takeaways.map(x => `<li>${x}</li>`).join('');
+}
+
+function renderQA() {
+  const strip = document.getElementById('qaStrip');
+  strip.innerHTML = DATA.data_qa_strip.map(x => `
+    <div class="chip">
+      <div class="k">${x.name}</div>
+      <div class="v status-${x.state}">${x.state}</div>
+    </div>
+  `).join('');
+}
+
+function renderOverall() {
+  renderTable('overallTbl', DATA.overall_rows, [
+    {key:'指标', label:'指标', w:140},
+    {key:'Sessions', label:'Sessions(Clicks UV,本/上/WoW)', type:'pair_count', num:true, w:260},
+    {key:'Revenue', label:'Revenue(本/上/WoW)', type:'pair_money', num:true, w:240},
+    {key:'RevenueShare', label:'Revenue%', type:'rate', num:true, w:120},
+  ]);
+}
+
+function renderManualTheme() {
+  renderTable('manualThemeTbl', DATA.manual_theme_rows, [
+    {key:'Theme', label:'Theme', w:160},
+    {key:'Send', label:'Send(本/上/WoW)', type:'pair_count', num:true, w:210},
+    {key:'Delivered', label:'Delivered(本/上/WoW)', type:'pair_count', num:true, w:220},
+    {key:'Open rate', label:'Open rate(本/上/WoW)', type:'pair_rate', num:true, w:220},
+    {key:'CTR', label:'CTR(本/上/WoW)', type:'pair_rate', num:true, w:190},
+    {key:'CTO', label:'CTO(本/上/WoW)', type:'pair_rate', num:true, w:190},
+    {key:'UV', label:'UV(本/上/WoW)', type:'pair_count', num:true, w:180},
+    {key:'Order UV', label:'Order UV(本/上/WoW)', type:'pair_count', num:true, w:210},
+    {key:'Revenue', label:'Revenue(本/上/WoW)', type:'pair_money', num:true, w:230},
+    {key:'CVR', label:'CVR(本/上/WoW)', type:'pair_rate', num:true, w:190},
+  ]);
+}
+
+function renderManualTotal() {
+  renderTable('manualTotalTbl', DATA.manual_total_rows, [
+    {key:'指标', label:'指标', w:180},
+    {key:'value', label:'本/上/WoW', type:'pair_count', num:true, w:280},
+  ]);
+  // Re-render with metric-specific types
+  const table = document.getElementById('manualTotalTbl');
+  const rows = DATA.manual_total_rows;
+  const body = rows.map(r => {
+    const t = r.type === 'money' ? 'pair_money' : (r.type === 'rate' ? 'pair_rate' : 'pair_count');
+    const txt = fmtPair(r.value, r.type);
+    return `<tr><td class="text">${r['指标']}</td><td class="num">${txt}</td></tr>`;
+  }).join('');
+  table.innerHTML = `<colgroup><col style="width:220px"><col style="width:320px"></colgroup><thead><tr><th class="text">指标</th><th class="num">本周 / 上周 / WoW</th></tr></thead><tbody>${body}</tbody>`;
+  document.getElementById('manualBullets').innerHTML = DATA.manual_bullets.map(x => `<li>${x}</li>`).join('');
+}
+
+function renderCarryover() {
+  const cards = document.getElementById('carryCards');
+  const totals = DATA.carryover_totals;
+  const items = [
+    {label:'历史UV', value:totals['UV'], type:'count'},
+    {label:'历史Order UV', value:totals['Order UV'], type:'count'},
+    {label:'历史Revenue', value:totals['Revenue'], type:'money'},
+  ];
+  cards.innerHTML = items.map(x => `
+    <div class="card">
+      <div class="k">${x.label}</div>
+      <div class="v">${x.type === 'money' ? fmtMoney(x.value.cur) : fmtCount(x.value.cur)}</div>
+      <div class="w ${deltaCls(x.value.wow)}">WoW ${fmtDelta(x.value.wow)}</div>
+    </div>
+  `).join('');
+  renderTable('carryTbl', DATA.carryover_rows, [
+    {key:'Campaign', label:'Campaign', w:280},
+    {key:'UV', label:'UV(本/上/WoW)', type:'pair_count', num:true, w:220},
+    {key:'Order UV', label:'Order UV(本/上/WoW)', type:'pair_count', num:true, w:220},
+    {key:'Revenue', label:'Revenue(本/上/WoW)', type:'pair_money', num:true, w:250},
+  ]);
+}
+
+function renderAuto() {
+  const table = document.getElementById('autoTbl');
+  const rows = DATA.auto_rows;
+  const body = rows.map(r => {
+    const txt = fmtPair(r.value, r.type);
+    return `<tr><td class="text">${r['指标']}</td><td class="num">${txt}</td></tr>`;
+  }).join('');
+  table.innerHTML = `<colgroup><col style="width:220px"><col style="width:320px"></colgroup><thead><tr><th class="text">指标</th><th class="num">本周 / 上周 / WoW</th></tr></thead><tbody>${body}</tbody>`;
+  document.getElementById('autoBullets').innerHTML = DATA.auto_bullets.map(x => `<li>${x}</li>`).join('');
+}
+
+function renderRaw() {
+  const select = document.getElementById('siteFilter');
+  select.innerHTML = DATA.raw_sites.map(s => `<option value="${s}">${s}</option>`).join('');
+  select.value = DATA.raw_sites.includes('NAME') ? 'NAME' : DATA.raw_sites[0];
+  const cols = [
+    {key:'Theme', label:'Theme', w:140},
+    {key:'日期', label:'日期', w:110},
+    {key:'站点', label:'站点', w:100},
+    {key:'人群', label:'人群', w:130},
+    {key:'原始campaign', label:'原始campaign', w:260},
+    {key:'发送数', label:'发送数(本/上/WoW)', type:'pair_count', num:true, w:210},
+    {key:'打开率', label:'打开率(本/上/WoW)', type:'pair_rate', num:true, w:200},
+    {key:'点击率', label:'点击率(本/上/WoW)', type:'pair_rate', num:true, w:200},
+    {key:'退订率', label:'退订率(本/上/WoW)', type:'pair_rate', num:true, w:200},
+    {key:'是否存在上周可比项', label:'上周可比', w:120},
+  ];
+  function draw() {
+    const site = select.value;
+    const rows = DATA.raw_rows.filter(r => site === 'ALL' ? true : r['站点'] === site);
+    renderTable('rawTbl', rows, cols);
+  }
+  select.addEventListener('change', draw);
+  draw();
+}
+
+function renderAppendix() {
+  renderTable('mapTbl', DATA.mapping_rows, [
+    {key:'日期', label:'日期', w:110},
+    {key:'Theme', label:'Theme', w:150},
+    {key:'Emarsys campaign', label:'Emarsys campaign', w:260},
+    {key:'Matched Attribuly campaign', label:'Matched Attribuly campaign', w:360},
+  ]);
+  renderTable('valTbl', DATA.validation_summary, [
+    {key:'section_name', label:'section_name', w:170},
+    {key:'source_file', label:'source_file', w:270},
+    {key:'raw_total', label:'raw_total', type:'money', num:true, w:130},
+    {key:'included_total', label:'included_total', type:'money', num:true, w:140},
+    {key:'dashboard_total', label:'dashboard_total', type:'money', num:true, w:150},
+    {key:'diff', label:'diff', type:'money', num:true, w:120},
+    {key:'status', label:'status', w:100},
+    {key:'filter_logic', label:'filter_logic', w:380},
+  ]);
+  document.getElementById('changelog').textContent = DATA.changelog;
+}
+
+renderSummaryCards();
+renderQA();
+renderOverall();
+renderManualTheme();
+renderManualTotal();
+renderCarryover();
+renderAuto();
+renderRaw();
+renderAppendix();
+</script>
+</body>
+</html>

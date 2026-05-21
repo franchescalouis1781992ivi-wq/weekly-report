@@ -1,0 +1,11 @@
+PatPat EDM v37 修复说明（2026-04-05 ~ 2026-04-11）
+- baseline: patpat_edm_weekly_dashboard_2026-03-29_2026-04-04_v34_ai_insights_injected.html
+- 本次使用 campaign 级 Emarsys 手动/自动 CSV（非 daily summary）
+- theme_em_detail rows: 58
+- carry_rows: 6
+- auto_flow_rows: 325
+- manual send: 7266400.0
+- manual revenue: 2238.18
+- auto send: 17120.0
+- auto revenue: 2015.38
+- auto RPR: 0.118937

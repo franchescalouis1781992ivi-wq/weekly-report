@@ -1,0 +1,8 @@
+v48 自动模块口径重定义
+- 自动化包含（归因）已按你新名单重算
+- eautomation_Sale_welcome_us-1_Miki_2026_2509 -> 订阅欢迎
+- other/履约（order-confirmation/order-status/delivery/gift-card/membership/engagement）不计入自动归因
+- auto send: 19591.0
+- auto revenue: 1633.37
+- flow rows: 360
+- unresolved: 9

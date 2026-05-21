@@ -1,0 +1,6 @@
+Changelog
+- 重构板块：Executive Summary、Data QA、Overall Snapshot、Manual Theme、Manual Total、Carryover、Automation、Raw Evidence、Appendix。
+- 支持本周 vs 上周：Executive Summary、Overall Snapshot、Manual Total、Automation Summary。
+- 仅按周切换（不做 WoW）：Manual Theme、Historical Carryover、Raw Evidence。
+- 数据口径风险：manual_theme_revenue[current], unmatched=2, status=pass；manual_theme_revenue[previous], unmatched=36, status=warning；mapping_check[current], unmatched=2, status=pass；mapping_check[previous], unmatched=36, status=pass
+- unmatched / mapping incomplete：current=2, previous=36

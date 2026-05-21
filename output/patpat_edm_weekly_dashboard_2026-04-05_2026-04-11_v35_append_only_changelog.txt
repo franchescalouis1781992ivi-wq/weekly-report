@@ -1,0 +1,10 @@
+PatPat EDM v35 追加说明（2026-04-05 ~ 2026-04-11）
+- baseline: patpat_edm_weekly_dashboard_2026-03-29_2026-04-04_v34_ai_insights_injected.html
+- append key: w6
+- manual send: 14656298.0
+- manual revenue: 2238.18
+- auto send: 46922.0
+- auto revenue: 2015.38
+- auto RPR: 0.043358
+- private snapshot denominator: market(all attribuly channels)
+- note: this week's emarsys files are daily-summary format; flow send rows are allocated by family revenue share.

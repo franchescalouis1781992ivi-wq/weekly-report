@@ -1,0 +1,21 @@
+{
+  "baseline": "/Users/chengxinyuan/Documents/Playground/0408-更新patpat_edm_handoff_2026-04-08/dashboards/patpat_edm_weekly_dashboard_2026-03-29_2026-04-04_v34_ai_insights_injected.html",
+  "manual_file": "/Users/chengxinyuan/patpat邮件/干点看板搭建的大事/emarsys手动邮件-TrendReporting4.5-4.11.csv",
+  "auto_file": "/Users/chengxinyuan/patpat邮件/干点看板搭建的大事/emarsys自动邮件-TrendReporting4.5-4.11.csv",
+  "attr_file": "/Users/chengxinyuan/patpat邮件/干点看板搭建的大事/attribuly归因数据表4.5-4.11.xlsx",
+  "new_week_key": "w6",
+  "checks": {
+    "manual_send": 7266400.0,
+    "manual_revenue": 2238.18,
+    "auto_send": 17120.0,
+    "auto_revenue": 757.69,
+    "auto_rpr": 0.044714665092947775,
+    "theme_em_detail_rows": 58,
+    "carry_rows": 6,
+    "auto_flow_rows": 325,
+    "private_revenue": 4634.24,
+    "email_plus_sms_revenue": 4634.24,
+    "market_revenue": 99758.02999999998
+  },
+  "previous_week_range": "2026-03-29 ~ 2026-04-04"
+}

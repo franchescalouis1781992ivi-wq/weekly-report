@@ -1,0 +1,23 @@
+{
+  "file": "patpat_edm_weekly_dashboard_2026-04-26_2026-05-02_v51_auto_uv_orders_fixed.html",
+  "period": "2026-04-26 ~ 2026-05-02",
+  "auto_overview": {
+    "send": 26064.0,
+    "delivered": 25826.0,
+    "opened": 8442.0,
+    "clicked": 185.0,
+    "unsubscribed": 61.0,
+    "uv": 231.0,
+    "order_uv": 28.0,
+    "revenue": 2073.4
+  },
+  "flow_delivered": {
+    "浏览未购": 5705.0,
+    "订阅欢迎": 10993.0,
+    "加购未购": 2712.0,
+    "reactivation": 5672.0,
+    "首购后入会": 744.0
+  },
+  "unresolved_row_count": 3,
+  "status": "pass"
+}

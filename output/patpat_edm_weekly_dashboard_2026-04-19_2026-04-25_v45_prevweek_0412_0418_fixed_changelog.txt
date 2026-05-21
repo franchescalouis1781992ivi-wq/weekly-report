@@ -1,0 +1,10 @@
+PatPat EDM v45 修正说明（上上周周期更正）
+- baseline: patpat_edm_weekly_dashboard_2026-04-19_2026-04-25_v44_append_only.html
+- 修正周期: 2026-04-12 ~ 2026-04-19 -> 2026-04-12 ~ 2026-04-18
+- 方法: 保持 append-only 框架，仅替换 w7 周块并回刷后续 compare 字段
+- w7 manual send: 8157205.0
+- w7 manual revenue: 3173.4
+- w7 auto send: 23577.0
+- w7 auto revenue: 1197.41
+- w7 unresolved: 9
+- output: patpat_edm_weekly_dashboard_2026-04-19_2026-04-25_v45_prevweek_0412_0418_fixed.html

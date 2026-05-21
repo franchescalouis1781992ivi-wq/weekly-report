@@ -1,0 +1,10 @@
+Changelog
+- Historical Carryover 已按“周期内有归因 + 手动邮件 + 发送期早于当前周期”重算，并兼容旧命名规则（*_2026_02 / *_2026_2）。
+- 旧命名规则纳入数量：carryover_old_naming_rule_included_count current=1, previous=6。
+- 日期缺失/旧规则推断数量：carryover_missing_date_inferred_count current=1, previous=6。
+- carryover_missing_examples(current)：gift-card_2025_10, emanual_disney_sq_2026_02。
+- emanual_family_cxy_2026_02 这类 campaign 已纳入 carryover 判断逻辑（命中旧命名规则时）。
+- 主题汇总已改为“日期 + 业务主题”近似匹配 Emarsys 发送数据，不再依赖 campaign 名精确相等。
+- 站点=ALL 时，发送指标已聚合所有站点发送数据；站点/人群筛选继续联动发送指标。
+- Delivered=0 主题修复：current before=4, after=3; previous before=6, after=6。
+- manual revenue 对账差异：current=146.21, previous=0.0。

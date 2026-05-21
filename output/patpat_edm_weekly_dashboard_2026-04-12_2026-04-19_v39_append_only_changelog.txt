@@ -1,0 +1,8 @@
+Changelog
+- Baseline: patpat_edm_weekly_dashboard_2026-04-05_2026-04-11_v38_auto_email_only_fix.html
+- Appended new week: 2026-04-12 ~ 2026-04-19 as w7 (append-only, historical weeks preserved).
+- Manual total: Send=9,443,128, Delivered=9,422,564, Revenue=3,173.40.
+- Auto total: Send=26,897, Delivered=26,676, Revenue=1,197.41, RPR=0.0449.
+- Private snapshot: 大盘Revenue=107,568.45, EmailRevenue=4,829.33, SMSRevenue=889.07, 私域Revenue=5,718.40.
+- AUTO_FAMILY_ATTR_BY_RANGE appended for 2026-04-12 ~ 2026-04-19.
+- Week selector updated with w7 option and set as default week.

@@ -1,0 +1,21 @@
+Append-only 修正版说明（v20）
+
+基线文件：patpat_edm_weekly_dashboard_2026-03-15_2026-03-21_v18_auto_ui_refined.html
+处理原则：只追加 2026-03-22 ~ 2026-03-28（w4），不重算、不覆盖历史周。
+
+已完成：
+1) 新增 w4 周数据（手动+自动+总览）
+2) period 下拉新增 w4，并默认定位到 w4
+3) 三周趋势扩展为四周趋势（追加一行 w4）
+4) 顶部周期展示改为 3.22-3.28 vs 3.15-3.21
+
+已确认历史周未改动：
+- w1 manual send 仍为 13,448,673
+- w2 manual send 仍为 9,832,435
+- w3 manual send 仍为 7,760,165
+
+新周关键值：
+- w4 manual send = 8,318,153
+
+输出文件：
+- patpat_edm_weekly_dashboard_2026-03-22_2026-03-28_v20_append_only.html

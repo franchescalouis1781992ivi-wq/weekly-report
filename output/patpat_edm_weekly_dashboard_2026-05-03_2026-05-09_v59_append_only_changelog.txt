@@ -1,0 +1,10 @@
+PatPat EDM v59 追加更新说明（append-only）
+- baseline: patpat_edm_weekly_dashboard_2026-04-26_2026-05-02_v58_auto_family_revenue_fixed.html
+- 新增周期: 2026-05-03 ~ 2026-05-09
+- w9 manual send: 9387647.0
+- w9 manual revenue: 2439.94
+- w9 auto send: 18589.0
+- w9 auto revenue: 1561.29
+- w9 auto RPR: 0.093969
+- w9 unresolved: 16
+- output: patpat_edm_weekly_dashboard_2026-05-03_2026-05-09_v59_append_only.html

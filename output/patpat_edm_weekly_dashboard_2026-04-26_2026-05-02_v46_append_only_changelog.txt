@@ -1,0 +1,10 @@
+PatPat EDM v46 追加更新说明（append-only）
+- baseline: patpat_edm_weekly_dashboard_2026-04-19_2026-04-25_v45_prevweek_0412_0418_fixed.html
+- 新增周期: 2026-04-26 ~ 2026-05-02
+- w9 manual send: 7662148.0
+- w9 manual revenue: 2905.59
+- w9 auto send: 19591.0
+- w9 auto revenue: 1380.94
+- w9 auto RPR: 0.071127
+- w9 unresolved: 9
+- output: patpat_edm_weekly_dashboard_2026-04-26_2026-05-02_v46_append_only.html

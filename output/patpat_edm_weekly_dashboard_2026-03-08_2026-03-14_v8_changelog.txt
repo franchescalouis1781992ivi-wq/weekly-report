@@ -1,0 +1,10 @@
+Changelog
+- Theme 已改为 emanual_/manual_ 后第二个 token。
+- 站点筛选已真正联动发送数据（Send/Delivered/Open rate/CTR/CTO 会重算）。
+- 人群筛选已真正联动发送数据（可与站点组合筛选）。
+- 主题汇总已新增 totals strip（Theme Revenue/Order UV/UV/Send Total）。
+- 手动总览已按第二版指标定义重算（Emarsys周总 + Attribuly归因）：是。
+- carryover 已按第二版定义重算（周期外发送、周期内仍出单）。
+- 3.1-3.7 total sent / delivered 已修正为 13,448,673 / 13,422,770。
+- 当前周期 3.8-3.14 手动发送总览源：已找到真实 Emarsys 手动周报并校验。
+- manual revenue 对账差异：current=275.56, previous=1272.86。

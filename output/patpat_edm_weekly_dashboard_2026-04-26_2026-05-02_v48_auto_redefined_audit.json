@@ -1,0 +1,53 @@
+{
+  "base": "/Users/chengxinyuan/Documents/Playground/output/patpat_edm_weekly_dashboard_2026-04-26_2026-05-02_v46_append_only.html",
+  "output": "/Users/chengxinyuan/Documents/Playground/output/patpat_edm_weekly_dashboard_2026-04-26_2026-05-02_v48_auto_redefined.html",
+  "week": "w9",
+  "range": "2026-04-26 ~ 2026-05-02",
+  "auto_whitelist": [
+    "abandoned-cart_2025_09",
+    "subscribe-welcome_2025_09",
+    "abandoned-browse_2025_10",
+    "subscribe-welcome_2025_11",
+    "eautomation_sale_welcome_us-1_miki_2026_2509"
+  ],
+  "auto_totals": {
+    "send": 19591.0,
+    "delivered": 19415.0,
+    "opened": 6371.0,
+    "clicked": 169.0,
+    "unsubscribed": 58.0,
+    "uv": 136.0,
+    "order_uv": 20.0,
+    "revenue": 1633.3700000000003
+  },
+  "family_totals": {
+    "订阅欢迎": {
+      "UV": 82.0,
+      "Order UV": 10.0,
+      "Revenue": 795.72
+    },
+    "浏览未购": {
+      "UV": 24.0,
+      "Order UV": 4.0,
+      "Revenue": 243.86
+    },
+    "加购未购": {
+      "UV": 30.0,
+      "Order UV": 6.0,
+      "Revenue": 593.79
+    },
+    "reactivation": {
+      "UV": 0.0,
+      "Order UV": 0.0,
+      "Revenue": 0.0
+    },
+    "首购后入会": {
+      "UV": 0.0,
+      "Order UV": 0.0,
+      "Revenue": 0.0
+    }
+  },
+  "flow_rows_count": 360,
+  "unresolved_count": 9,
+  "site_node_revenue_field": "yes (allocation view, unchanged)"
+}

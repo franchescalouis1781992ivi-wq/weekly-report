@@ -1,0 +1,10 @@
+Changelog
+- 手动Email分析已移除退回率，改为展示 Unsubscribed（退订数）与 Unsubscribe rate（退订率 = 退订数 / 送达量）。
+- CVR 已明确为：转化率 = 下单UV / 访问UV。
+- 纳入活动数/排除活动数定义已补充到手动Email分析说明，并按 Emarsys 手动源数据口径统计。
+- Theme 已按业务归并：emanual_/manual_ 去前缀后取第二个 token，再去尾号数字（member1/member2/member3 -> member）。
+- 主题汇总 Revenue/UV/Order UV 已按业务主题总和聚合，避免同主题拆分显示。
+- 站点筛选与人群筛选继续联动发送指标（Send/Delivered/Open rate/CTR/CTO），归因指标不重复累计。
+- Historical Carryover 已补入旧命名规则（如 *_2026_02）仍在持续出单的手动邮件。
+- old_naming_rule_included_count：current=1, previous=6。
+- manual revenue 对账差异：current=275.56, previous=1272.86。
